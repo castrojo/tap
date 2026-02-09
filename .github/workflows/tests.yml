@@ -23,6 +23,12 @@ jobs:
         id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@master
 
+      - name: Tap repository
+        run: |
+          # Tap the current checkout as castrojo/tap
+          mkdir -p $(brew --repository)/Library/Taps/castrojo
+          ln -s $GITHUB_WORKSPACE $(brew --repository)/Library/Taps/castrojo/homebrew-tap
+
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v46
@@ -39,10 +45,10 @@ jobs:
             name=$(basename "$file" .rb)
             if [[ "$file" == Casks/* ]]; then
               echo "Auditing cask $name (from $file)"
-              brew audit --cask --strict --online "$file"
+              brew audit --cask --strict --online "castrojo/tap/$name"
             elif [[ "$file" == Formula/* ]]; then
               echo "Auditing formula $name (from $file)"
-              brew audit --strict --online "$file"
+              brew audit --strict --online "castrojo/tap/$name"
             fi
           done
 
@@ -54,9 +60,9 @@ jobs:
             name=$(basename "$file" .rb)
             if [[ "$file" == Casks/* ]]; then
               echo "Checking style for cask $name (from $file)"
-              brew style --cask "$file"
+              brew style --cask "castrojo/tap/$name"
             elif [[ "$file" == Formula/* ]]; then
               echo "Checking style for formula $name (from $file)"
-              brew style "$file"
+              brew style "castrojo/tap/$name"
             fi
           done
