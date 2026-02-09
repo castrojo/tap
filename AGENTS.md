@@ -117,9 +117,9 @@ Read [docs/CASK_CREATION_GUIDE.md](docs/CASK_CREATION_GUIDE.md) for detailed cas
    Assisted-by: [Model] via [Tool]"
    ```
 
-3. **Push and Create PR:**
+3. **Create PR (automatically pushes):**
    ```bash
-   git push -u origin feature/descriptive-name
+   # Use gh pr create - it pushes and creates PR in one command
    gh pr create --title "feat(component): add new feature" --body "$(cat <<'EOF'
    ## Summary
    - High-level overview of changes
@@ -145,7 +145,9 @@ Read [docs/CASK_CREATION_GUIDE.md](docs/CASK_CREATION_GUIDE.md) for detailed cas
 
 5. **Merge After Approval:**
    ```bash
-   gh pr merge --squash  # Or merge via GitHub UI
+   gh pr merge --squash  # Preferred - squashes commits
+   # OR
+   gh pr merge --merge   # Merge commit
    ```
 
 **Benefits of This Workflow:**
@@ -159,7 +161,7 @@ Read [docs/CASK_CREATION_GUIDE.md](docs/CASK_CREATION_GUIDE.md) for detailed cas
 
 ## Landing the Plane (Session Completion)
 
-**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until changes are pushed to remote.
 
 **MANDATORY WORKFLOW:**
 
@@ -168,18 +170,26 @@ Read [docs/CASK_CREATION_GUIDE.md](docs/CASK_CREATION_GUIDE.md) for detailed cas
 3. **Update issue status** - Close finished work, update in-progress items
 4. **PUSH TO REMOTE** - This is MANDATORY:
    ```bash
+   # For direct commits to main (small fixes, non-workflow files):
    git pull --rebase
    git push
    git status  # MUST show "up to date with origin"
+   
+   # For feature branches / PRs:
+   gh pr create --title "..." --body "..."  # Automatically pushes
+   # OR if PR already exists:
+   git push  # Push additional commits to existing PR
    ```
 5. **Clean up** - Clear stashes, prune remote branches
 6. **Verify** - All changes committed AND pushed
 7. **Hand off** - Provide context for next session
 
 **CRITICAL RULES:**
-- Work is NOT complete until `git push` succeeds
+- Work is NOT complete until changes are pushed to remote
 - NEVER stop before pushing - that leaves work stranded locally
 - NEVER say "ready to push when you are" - YOU must push
+- Use `gh pr create` for new PRs (automatically pushes)
+- Use `git push` only for: direct main commits OR additional commits to existing PRs
 - If push fails, resolve and retry until it succeeds
 
 ## Conventional Commits
