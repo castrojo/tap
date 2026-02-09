@@ -1,5 +1,34 @@
 # Copilot Instructions for homebrew-tap
 
+## ⚠️ CRITICAL: VALIDATION IS MANDATORY
+
+**BEFORE EVERY COMMIT, YOU MUST RUN VALIDATION:**
+
+```bash
+# For single file (REQUIRED after creating/editing)
+./tap-tools/tap-validate file Casks/your-cask-linux.rb --fix
+
+# For all files
+./tap-tools/tap-validate all --fix
+```
+
+**❌ NEVER commit without validation passing**  
+**❌ NEVER skip this step - it prevents CI failures**  
+**❌ NEVER use --no-verify to bypass pre-commit hooks**  
+
+**Expected output:**
+```
+✓ Style check passed
+```
+
+**If validation fails:**
+1. Review the error message
+2. The --fix flag auto-corrects most issues
+3. Re-run validation until passing
+4. **Only then commit**
+
+---
+
 ## Repository Overview
 
 This is a **Linux-only** Homebrew tap for packages unavailable or incompatible with the official Homebrew repositories. The tap targets **immutable/read-only filesystem distributions** (Fedora Silverblue, Universal Blue) where system directories like `/usr/`, `/opt/`, and `/etc/` are read-only.
@@ -76,19 +105,37 @@ homebrew-tap/
 - 4-5x faster than bash scripts
 - Ensures XDG compliance
 
-### 2. Validation (ALWAYS run before committing)
+### 2. Validation (MANDATORY - NEVER SKIP)
+
+**YOU MUST validate IMMEDIATELY after creating or editing ANY Ruby file:**
 
 ```bash
-# Validate specific file
-./tap-tools/tap-validate file Casks/app-name-linux.rb
-./tap-tools/tap-validate file Casks/app-name-linux.rb --fix  # Auto-fix style
-
-# Validate all packages
-./tap-tools/tap-validate all
-./tap-tools/tap-validate all --fix
+# After generating or editing - REQUIRED
+./tap-tools/tap-validate file Casks/app-name-linux.rb --fix
 ```
 
+**CRITICAL RULES:**
+- ❌ **NEVER commit without validation passing**
+- ❌ **NEVER skip validation "just this once"**
+- ❌ **NEVER use --no-verify to bypass pre-commit hooks**
+- ✅ **ALWAYS run validation with --fix flag**
+- ✅ **ALWAYS re-validate after making manual edits**
+- ✅ **ALWAYS check that output shows `✓ Style check passed`**
+
+**Validation catches:**
+- Line length violations (max 118 chars)
+- Array ordering issues (must be alphabetical)
+- Hardcoded paths (must use XDG environment variables)
+- Stanza spacing and ordering issues
+- All RuboCop violations
+
 **Expected output:**
+```
+→ Validating app-name-linux...
+✓ Style check passed
+```
+
+**If validation fails, the --fix flag will auto-correct most issues. Re-stage the file and validate again until passing.**
 - ✓ Style check passed
 - Audit check may show path errors (expected - requires tapping first)
 

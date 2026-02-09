@@ -55,6 +55,22 @@ Package names are automatically derived from repository names (e.g., `user/my-ap
 
 ## For Package Maintainers & Contributors
 
+### First-Time Setup (Required)
+
+**After cloning the repository, install git hooks:**
+
+```bash
+./scripts/setup-hooks.sh
+```
+
+This installs a pre-commit hook that:
+- ✅ Automatically validates all Ruby files before commit
+- ✅ Auto-fixes style issues with RuboCop
+- ✅ Prevents committing invalid code that would fail CI
+- ✅ Saves time by catching issues locally
+
+**The hook is mandatory for all contributors.**
+
 ### Quick Start with Go CLI Tools (Recommended)
 
 **Generate from GitHub releases:**
