@@ -1,5 +1,7 @@
 # Personal Homebrew Tap
 
+**⚠️ LINUX ONLY** - This tap provides Linux-specific packages. All formulas and casks must use Linux binaries and downloads.
+
 Automated Homebrew tap for Linux packages with intelligent updates and quality gates.
 
 ## Features
@@ -72,6 +74,7 @@ See [docs/AGENT_GUIDE.md](docs/AGENT_GUIDE.md) for comprehensive packaging instr
 ## Quality Standards
 
 All packages must:
+- **Use Linux binaries only** - No macOS or Windows downloads
 - Pass `brew audit --strict --online`
 - Pass `brew style`
 - Include valid SPDX license

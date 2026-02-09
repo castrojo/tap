@@ -1,5 +1,12 @@
 # Cask Creation Guide - Critical Information
 
+**⚠️ LINUX ONLY REPOSITORY ⚠️**
+
+**THIS TAP IS LINUX-ONLY. ALL CASKS MUST USE LINUX DOWNLOADS.**
+- ✓ Use Linux binaries (e.g., `app-linux-x64.tar.gz`, `app_amd64.deb`)
+- ✗ NEVER use macOS downloads (`.dmg`, `.pkg`, macOS `.zip`)
+- ✗ NEVER use Windows downloads (`.exe`, `.msi`)
+
 **Last Updated:** 2026-02-09  
 **Homebrew Version:** Current (2026)  
 **Status:** TESTED AND VERIFIED
@@ -22,15 +29,17 @@ depends_on :linux
 **CORRECT OPTIONS:**
 
 #### Option A: For Linux-Only Tap (Recommended)
-If your entire tap is Linux-specific, **omit `depends_on` entirely**:
+If your entire tap is Linux-specific (THIS TAP), **omit `depends_on` entirely**:
 
 ```ruby
 cask "my-app" do
   version "1.0.0"
-  # ... no depends_on needed
+  # ... no depends_on needed - this tap is Linux-only
   binary "my-app"
 end
 ```
+
+**IMPORTANT:** Always verify you're downloading the **Linux** version of the binary, not macOS or Windows.
 
 #### Option B: For Platform-Specific Requirements
 If you need platform requirements, use the hash syntax:
@@ -181,6 +190,13 @@ cask "app-name" do
   binary "path/to/binary", target: "command-name"
 end
 ```
+
+**⚠️ CRITICAL:** The URL MUST point to a Linux binary. Common patterns:
+- `app-linux-x64.tar.gz` ✓
+- `app-x86_64-unknown-linux-gnu.tar.gz` ✓
+- `app_amd64.deb` ✓
+- `app-macos.dmg` ✗ WRONG
+- `app-darwin-x64.zip` ✗ WRONG
 
 ### Binary Path Rules
 

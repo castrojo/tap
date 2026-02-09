@@ -95,30 +95,40 @@ fi
 
 success "Latest version: $VERSION (tag: $RELEASE_TAG)"
 
-# Find binary asset (tar.gz or .zip)
-info "Detecting binary assets..."
+# Find binary asset (tar.gz or .zip) - LINUX ONLY
+info "Detecting Linux binary assets..."
 ASSETS=$(echo "$RELEASE_DATA" | jq -r '.assets')
 
-# Try to find tar.gz first
-ASSET_URL=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.(tar\\.gz|tgz)$"; "i")) | .browser_download_url' | head -n1)
+# Try to find Linux-specific tarballs first
+ASSET_URL=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("(linux|amd64|x86_64).*\\.(tar\\.gz|tgz|tar\\.xz)$"; "i")) | .browser_download_url' | head -n1)
 ASSET_TYPE="tarball"
-ASSET_NAME=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.(tar\\.gz|tgz)$"; "i")) | .name' | head -n1)
+ASSET_NAME=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("(linux|amd64|x86_64).*\\.(tar\\.gz|tgz|tar\\.xz)$"; "i")) | .name' | head -n1)
 
-# If no tarball, try .zip
+# If no Linux tarball, try generic tarball (but warn)
 if [ -z "$ASSET_URL" ] || [ "$ASSET_URL" = "null" ]; then
-    ASSET_URL=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.zip$"; "i")) | .browser_download_url' | head -n1)
-    ASSET_TYPE="zip"
-    ASSET_NAME=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.zip$"; "i")) | .name' | head -n1)
+    ASSET_URL=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.(tar\\.gz|tgz|tar\\.xz)$"; "i")) | .browser_download_url' | head -n1)
+    ASSET_NAME=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.(tar\\.gz|tgz|tar\\.xz)$"; "i")) | .name' | head -n1)
+    
+    if [ -n "$ASSET_URL" ] && [ "$ASSET_URL" != "null" ]; then
+        warn "Found generic tarball, not explicitly marked as Linux"
+        warn "Verify this is a Linux binary before proceeding!"
+    fi
+fi
+
+# Check for macOS-specific patterns and REJECT them
+MACOS_ASSET=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("(macos|darwin|osx|\\.dmg|\\.pkg)"; "i")) | .name' | head -n1)
+if [ -n "$MACOS_ASSET" ] && [ "$MACOS_ASSET" != "null" ]; then
+    error "Found macOS asset: $MACOS_ASSET\n  This tap is LINUX ONLY. Do not use macOS downloads.\n  Look for Linux-specific assets (linux, amd64, x86_64)"
 fi
 
 # If still nothing found, show available assets and error
 if [ -z "$ASSET_URL" ] || [ "$ASSET_URL" = "null" ]; then
     warn "Available assets in latest release:"
     echo "$ASSETS" | jq -r '.[].name' | sed 's/^/  - /'
-    error "No suitable binary asset found. Looking for: .tar.gz, .tgz, or .zip"
+    error "No suitable Linux binary asset found.\n  This tap is LINUX ONLY.\n  Looking for: *linux*.tar.gz, *amd64*.tar.gz, *x86_64*.tar.gz\n  NOT looking for: *macos*, *darwin*, *.dmg, *.pkg"
 fi
 
-success "Found $ASSET_TYPE: $ASSET_NAME"
+success "Found Linux $ASSET_TYPE: $ASSET_NAME"
 
 # Download asset and calculate SHA256
 info "Downloading asset to calculate SHA256..."

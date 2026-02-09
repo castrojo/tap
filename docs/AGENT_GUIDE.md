@@ -1,5 +1,12 @@
 # Agent Guide: Automated Homebrew Packaging
 
+**⚠️ LINUX ONLY REPOSITORY ⚠️**
+
+**THIS TAP IS LINUX-ONLY. ALL PACKAGES MUST USE LINUX BINARIES.**
+- ✓ Use Linux downloads (e.g., `app-linux-x64.tar.gz`, `tool_linux_amd64`)
+- ✗ NEVER use macOS downloads (`.dmg`, `.pkg`, `-darwin-`, `-macos-`)
+- ✗ NEVER use Windows downloads (`.exe`, `.msi`, `-windows-`, `.zip` for Windows)
+
 This guide enables AI agents to independently package software for Homebrew. Follow these instructions to create formulas (CLI tools) and casks (GUI apps) with consistent quality.
 
 ## ⚠️ MUST READ FIRST

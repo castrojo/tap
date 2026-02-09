@@ -1,5 +1,16 @@
 # Agent Instructions
 
+**⚠️ LINUX ONLY REPOSITORY ⚠️**
+
+**THIS TAP IS LINUX-ONLY. ALL PACKAGES MUST USE LINUX BINARIES.**
+- ✓ Use Linux downloads (e.g., `app-linux-x64.tar.gz`, `tool_linux_amd64`)
+- ✗ NEVER use macOS downloads (`.dmg`, `.pkg`, `-darwin-`, `-macos-`)
+- ✗ NEVER use Windows downloads (`.exe`, `.msi`, `-windows-`)
+
+Read [docs/CASK_CREATION_GUIDE.md](docs/CASK_CREATION_GUIDE.md) before creating any casks.
+
+---
+
 This project uses **bd** (beads) for issue tracking. Run `bd onboard` to get started.
 
 ## Quick Reference

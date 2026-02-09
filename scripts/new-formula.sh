@@ -2,6 +2,8 @@
 #
 # new-formula.sh - Generate Homebrew formula from GitHub repository
 #
+# LINUX ONLY: This tap is for Linux packages only
+#
 # Usage: ./new-formula.sh <package-name> <github-repo-url>
 # Example: ./new-formula.sh myapp https://github.com/user/myapp
 
@@ -96,6 +98,8 @@ fi
 success "Latest version: $VERSION (tag: $RELEASE_TAG)"
 
 # Find tarball asset or construct URL
+# Note: Formulas typically use source tarballs, which are platform-independent
+# The resulting binary after compilation must be for Linux
 info "Detecting tarball URL..."
 TARBALL_URL=$(echo "$RELEASE_DATA" | jq -r '.tarball_url')
 
@@ -106,6 +110,8 @@ if [ -z "$TARBALL_URL" ] || [ "$TARBALL_URL" = "null" ]; then
 else
     success "Tarball URL: $TARBALL_URL"
 fi
+
+info "This tap is LINUX ONLY - ensure the formula builds for Linux"
 
 # Download tarball and calculate SHA256
 info "Downloading tarball to calculate SHA256..."
