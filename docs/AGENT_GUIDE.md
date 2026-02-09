@@ -59,8 +59,100 @@ This guide provides step-by-step instructions for AI agents to:
 Before starting, ensure:
 - GitHub CLI (`gh`) is installed and authenticated
 - `jq` is installed for JSON parsing
+- `sha256sum` is installed for checksum verification (MANDATORY)
 - Git repository with proper remote configured
 - Write access to create branches and PRs
+
+## Package Format Priority and SHA256 Verification
+
+**CRITICAL: Read this section carefully before packaging any software.**
+
+### Package Format Selection (Strict Priority Order)
+
+**PRIORITY 1: Tarball (PREFERRED)**
+
+Look for Linux tarballs in this order:
+1. `*-linux-x64.tar.gz` or `*-linux-amd64.tar.gz`
+2. `*-x86_64-unknown-linux-gnu.tar.gz`
+3. `*-linux.tar.xz` or `*-linux.tgz`
+4. Generic `*.tar.gz` (verify it's for Linux)
+
+**Why Tarballs Are Preferred:**
+- Works across all Linux distributions
+- Simple extraction, no dependencies
+- No package manager conflicts
+- Predictable directory structure
+
+**PRIORITY 2: Debian Package (SECOND CHOICE)**
+
+Only use if no tarball is available:
+1. `*-amd64.deb` or `*_amd64.deb`
+2. `*-linux-amd64.deb`
+
+**Note:** Requires extraction using `ar` and `tar`
+
+**PRIORITY 3: Other Formats (Case-by-Case)**
+
+- **AppImage**: Self-contained, can be used directly
+- **Snap/Flatpak**: Generally avoid (requires runtime)
+- **RPM**: Avoid (use tarball or .deb instead)
+
+### SHA256 Verification (MANDATORY - NO EXCEPTIONS)
+
+**Every package MUST include SHA256 verification. This is non-negotiable.**
+
+#### Verification Workflow:
+
+**Step 1: Download the asset**
+```bash
+curl -LO https://github.com/user/repo/releases/download/v1.0.0/app-linux-x64.tar.gz
+```
+
+**Step 2: Calculate SHA256**
+```bash
+sha256sum app-linux-x64.tar.gz
+# Output: 3a5b8c9def456...  app-linux-x64.tar.gz
+```
+
+**Step 3: Verify against upstream (if available)**
+```bash
+# Download upstream checksums
+curl -LO https://github.com/user/repo/releases/download/v1.0.0/SHA256SUMS
+
+# Verify
+sha256sum --check SHA256SUMS 2>&1 | grep app-linux-x64.tar.gz
+# Expected: app-linux-x64.tar.gz: OK
+```
+
+**Common checksum file names:** `SHA256SUMS`, `checksums.txt`, `CHECKSUMS`, `*.sha256`
+
+**Step 4: Use verified SHA256 in cask**
+```ruby
+cask "app-name" do
+  version "1.0.0"
+  sha256 "3a5b8c9def456..."  # Verified hash here
+  
+  url "https://github.com/user/repo/releases/download/v#{version}/app-linux-x64.tar.gz"
+  # ...
+end
+```
+
+#### Verification Checklist:
+
+- [ ] Downloaded actual file
+- [ ] Calculated SHA256 using `sha256sum`
+- [ ] Checked for upstream checksums
+- [ ] Verified match if upstream checksums exist
+- [ ] SHA256 is lowercase hex (64 chars)
+- [ ] SHA256 is for Linux x86_64 (not ARM/macOS/Windows)
+
+#### When Checksums Don't Match:
+
+**STOP.** This indicates corruption or compromise. Re-download or report to upstream.
+
+#### When No Upstream Checksums:
+
+Still include calculated SHA256. Document in commit: "No upstream checksums available"
 
 ### Package Naming Convention
 

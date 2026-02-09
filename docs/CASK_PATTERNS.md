@@ -2,7 +2,42 @@
 
 Complete, copy-paste ready cask templates for Linux installations. Each pattern includes detection rules, installation strategies, and troubleshooting guidance.
 
-**Note:** These patterns focus on Linux systems using AppImages, tarballs, and binaries. macOS-specific patterns (.dmg, .pkg, .app bundles) are not included.
+**⚠️ LINUX ONLY:** These patterns are for Linux systems only. All examples use Linux binaries.
+
+## Package Format Priority
+
+**When selecting which asset to package, follow this strict priority:**
+
+1. **Tarball** (`.tar.gz`, `.tar.xz`, `.tgz`) - PREFERRED
+   - Most portable across distributions
+   - Simple extraction
+   - Examples: `app-linux-x64.tar.gz`, `app-x86_64-unknown-linux-gnu.tar.gz`
+
+2. **Debian Package** (`.deb`) - SECOND CHOICE
+   - Only if no tarball available
+   - Requires `ar` and `tar` extraction
+   - Examples: `app_amd64.deb`, `app-linux-amd64.deb`
+
+3. **Other formats** - Case-by-case
+   - AppImage: Self-contained, can use directly
+   - Snap/Flatpak: Generally avoid
+   - RPM: Avoid (use tarball or .deb)
+
+## SHA256 Verification (MANDATORY)
+
+**Every cask MUST include SHA256 verification:**
+
+```bash
+# Calculate SHA256 for any download
+curl -LO https://example.com/app-linux-x64.tar.gz
+sha256sum app-linux-x64.tar.gz
+
+# Verify against upstream if available
+curl -LO https://example.com/SHA256SUMS
+sha256sum --check SHA256SUMS
+```
+
+**NEVER skip SHA256 verification.** Use `sha256 :no_check` only with explicit justification.
 
 ## Table of Contents
 

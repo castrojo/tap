@@ -7,6 +7,78 @@
 - ✗ NEVER use macOS downloads (`.dmg`, `.pkg`, macOS `.zip`)
 - ✗ NEVER use Windows downloads (`.exe`, `.msi`)
 
+## Package Format Priority
+
+Use this strict priority order when selecting download format:
+
+**1. Tarball (PREFERRED)** - `.tar.gz`, `.tar.xz`, `.tgz`
+  - Most portable, works across all Linux distributions
+  - Simple extraction and installation
+  - No package manager dependencies
+  - Example: `app-linux-x64.tar.gz`
+
+**2. Debian Package (SECOND CHOICE)** - `.deb`
+  - Use only if no tarball is available
+  - Requires extraction via `ar` and `tar`
+  - May have distro-specific dependencies
+  - Example: `app_amd64.deb`
+
+**3. Other formats** - Only with explicit justification
+  - AppImage, snap, flatpak: Case-by-case basis
+  - RPM: Generally avoid (requires conversion)
+
+## Checksum Verification (MANDATORY)
+
+**EVERY cask MUST include SHA256 verification. NO EXCEPTIONS.**
+
+### Step-by-Step Verification Process:
+
+```bash
+# 1. Download the file
+curl -LO https://example.com/app-linux-x64.tar.gz
+
+# 2. Calculate SHA256
+sha256sum app-linux-x64.tar.gz
+# Output: abc123def456... app-linux-x64.tar.gz
+
+# 3. If upstream provides checksums, verify against them
+curl -LO https://example.com/SHA256SUMS
+grep app-linux-x64.tar.gz SHA256SUMS
+# Compare with your calculated hash
+
+# 4. Use the verified hash in your cask
+```
+
+### Cask Example with SHA256:
+
+```ruby
+cask "app-name" do
+  version "1.0.0"
+  sha256 "abc123def456..."  # MANDATORY - calculated from actual download
+  
+  url "https://example.com/app-linux-x64.tar.gz"
+  name "App Name"
+  desc "Description"
+  homepage "https://example.com"
+  
+  binary "app-name"
+end
+```
+
+### SHA256 Rules:
+
+**DO:**
+- ✓ Download the actual file and calculate its SHA256
+- ✓ Verify against upstream checksums if available
+- ✓ Use lowercase hexadecimal (64 characters)
+- ✓ Include SHA256 on the line immediately after `version`
+
+**DON'T:**
+- ✗ Skip SHA256 verification
+- ✗ Use `sha256 :no_check` (only acceptable with documented justification)
+- ✗ Copy SHA256 from untrusted sources
+- ✗ Use checksums for different architectures/platforms
+
 **Last Updated:** 2026-02-09  
 **Homebrew Version:** Current (2026)  
 **Status:** TESTED AND VERIFIED

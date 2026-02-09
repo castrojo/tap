@@ -95,23 +95,38 @@ fi
 
 success "Latest version: $VERSION (tag: $RELEASE_TAG)"
 
-# Find binary asset (tar.gz or .zip) - LINUX ONLY
-info "Detecting Linux binary assets..."
+# Find binary asset - LINUX ONLY - PRIORITY: Tarball > .deb
+info "Detecting Linux binary assets (prioritizing tarballs)..."
 ASSETS=$(echo "$RELEASE_DATA" | jq -r '.assets')
 
-# Try to find Linux-specific tarballs first
+# FIRST PRIORITY: Linux tarballs (.tar.gz, .tar.xz, .tgz)
+info "Searching for Linux tarballs (preferred format)..."
 ASSET_URL=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("(linux|amd64|x86_64).*\\.(tar\\.gz|tgz|tar\\.xz)$"; "i")) | .browser_download_url' | head -n1)
 ASSET_TYPE="tarball"
 ASSET_NAME=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("(linux|amd64|x86_64).*\\.(tar\\.gz|tgz|tar\\.xz)$"; "i")) | .name' | head -n1)
 
-# If no Linux tarball, try generic tarball (but warn)
+# SECOND PRIORITY: Debian packages (.deb) - only if no tarball found
 if [ -z "$ASSET_URL" ] || [ "$ASSET_URL" = "null" ]; then
-    ASSET_URL=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.(tar\\.gz|tgz|tar\\.xz)$"; "i")) | .browser_download_url' | head -n1)
-    ASSET_NAME=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.(tar\\.gz|tgz|tar\\.xz)$"; "i")) | .name' | head -n1)
+    info "No tarball found, searching for Debian packages (.deb)..."
+    ASSET_URL=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("(linux|amd64|x86_64).*\\.deb$"; "i")) | .browser_download_url' | head -n1)
+    ASSET_TYPE="deb"
+    ASSET_NAME=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("(linux|amd64|x86_64).*\\.deb$"; "i")) | .name' | head -n1)
     
     if [ -n "$ASSET_URL" ] && [ "$ASSET_URL" != "null" ]; then
-        warn "Found generic tarball, not explicitly marked as Linux"
-        warn "Verify this is a Linux binary before proceeding!"
+        warn "Using .deb package (second choice - prefer tarballs when available)"
+    fi
+fi
+
+# FALLBACK: Generic tarballs without Linux marker (warn user)
+if [ -z "$ASSET_URL" ] || [ "$ASSET_URL" = "null" ]; then
+    warn "No Linux-specific tarball found, trying generic tarballs..."
+    ASSET_URL=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.(tar\\.gz|tgz|tar\\.xz)$"; "i")) | .browser_download_url' | head -n1)
+    ASSET_NAME=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.(tar\\.gz|tgz|tar\\.xz)$"; "i")) | .name' | head -n1)
+    ASSET_TYPE="tarball"
+    
+    if [ -n "$ASSET_URL" ] && [ "$ASSET_URL" != "null" ]; then
+        warn "Found generic tarball without Linux marker: $ASSET_NAME"
+        warn "⚠️  VERIFY THIS IS A LINUX BINARY BEFORE PROCEEDING!"
     fi
 fi
 
@@ -125,13 +140,13 @@ fi
 if [ -z "$ASSET_URL" ] || [ "$ASSET_URL" = "null" ]; then
     warn "Available assets in latest release:"
     echo "$ASSETS" | jq -r '.[].name' | sed 's/^/  - /'
-    error "No suitable Linux binary asset found.\n  This tap is LINUX ONLY.\n  Looking for: *linux*.tar.gz, *amd64*.tar.gz, *x86_64*.tar.gz\n  NOT looking for: *macos*, *darwin*, *.dmg, *.pkg"
+    error "No suitable Linux binary asset found.\n  This tap is LINUX ONLY.\n  \n  PRIORITY ORDER:\n    1. Tarballs: *linux*.tar.gz, *amd64*.tar.xz, *x86_64*.tgz (PREFERRED)\n    2. Debian: *linux*.deb, *amd64*.deb (second choice)\n  \n  NOT ACCEPTABLE: *macos*, *darwin*, *.dmg, *.pkg, *.exe, *.msi"
 fi
 
 success "Found Linux $ASSET_TYPE: $ASSET_NAME"
 
-# Download asset and calculate SHA256
-info "Downloading asset to calculate SHA256..."
+# Download asset and calculate SHA256 (MANDATORY)
+info "Downloading asset to calculate SHA256 (required for all packages)..."
 TEMP_DIR=$(mktemp -d)
 trap "rm -rf $TEMP_DIR" EXIT
 
@@ -142,7 +157,38 @@ if ! curl -fsSL "$ASSET_URL" -o "$ASSET_PATH" 2>/dev/null; then
 fi
 
 SHA256=$(sha256sum "$ASSET_PATH" | awk '{print $1}')
-success "SHA256: $SHA256"
+success "SHA256 calculated: $SHA256"
+
+# Try to find and verify against upstream checksums if available
+info "Checking for upstream checksums..."
+CHECKSUM_PATTERNS=("SHA256SUMS" "checksums.txt" "CHECKSUMS" "${ASSET_NAME}.sha256" "sha256sums.txt")
+UPSTREAM_SHA256=""
+
+for pattern in "${CHECKSUM_PATTERNS[@]}"; do
+    CHECKSUM_URL=$(echo "$ASSETS" | jq -r ".[] | select(.name | test(\"$pattern\"; \"i\")) | .browser_download_url" | head -n1)
+    if [ -n "$CHECKSUM_URL" ] && [ "$CHECKSUM_URL" != "null" ]; then
+        info "Found checksum file: $pattern"
+        CHECKSUM_FILE="$TEMP_DIR/checksums"
+        if curl -fsSL "$CHECKSUM_URL" -o "$CHECKSUM_FILE" 2>/dev/null; then
+            # Try to find our asset's checksum in the file
+            UPSTREAM_SHA256=$(grep -i "$ASSET_NAME" "$CHECKSUM_FILE" | awk '{print $1}' | head -n1)
+            if [ -n "$UPSTREAM_SHA256" ]; then
+                info "Found upstream checksum for $ASSET_NAME"
+                if [ "$SHA256" = "$UPSTREAM_SHA256" ]; then
+                    success "✓ SHA256 verified against upstream checksum!"
+                else
+                    error "SHA256 MISMATCH!\n  Calculated: $SHA256\n  Upstream:   $UPSTREAM_SHA256\n  This indicates a corrupted download or compromised asset."
+                fi
+                break
+            fi
+        fi
+    fi
+done
+
+if [ -z "$UPSTREAM_SHA256" ]; then
+    warn "No upstream checksums found - using calculated SHA256"
+    warn "Verify checksum manually if possible against official release notes"
+fi
 
 # Determine cask path
 CASK_DIR="$(dirname "$0")/../Casks"

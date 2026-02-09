@@ -7,7 +7,52 @@
 - ✗ NEVER use macOS downloads (`.dmg`, `.pkg`, `-darwin-`, `-macos-`)
 - ✗ NEVER use Windows downloads (`.exe`, `.msi`, `-windows-`)
 
-Read [docs/CASK_CREATION_GUIDE.md](docs/CASK_CREATION_GUIDE.md) before creating any casks.
+## Package Format Priority
+
+When packaging software, use this strict priority order:
+
+**1. Tarball (PREFERRED)** - `.tar.gz`, `.tar.xz`, `.tgz`
+  - Most portable, works across all Linux distributions
+  - Simple extraction and installation
+  - No package manager dependencies
+  - Example: `app-linux-x64.tar.gz`
+
+**2. Debian Package (SECOND CHOICE)** - `.deb`
+  - Use only if no tarball is available
+  - Requires extraction via `ar` and `tar`
+  - May have distro-specific dependencies
+  - Example: `app_amd64.deb`
+
+**3. Other formats** - Only with explicit justification
+  - AppImage, snap, flatpak: Case-by-case basis
+  - RPM: Generally avoid (requires conversion)
+
+## Checksum Verification (MANDATORY)
+
+**EVERY package MUST have SHA256 verification:**
+
+```ruby
+cask "app-name" do
+  version "1.0.0"
+  sha256 "abc123..."  # REQUIRED - calculated from downloaded file
+  
+  url "https://example.com/app-linux-x64.tar.gz"
+  # ...
+end
+```
+
+**Verification steps:**
+1. Download the file: `curl -LO <url>`
+2. Calculate SHA256: `sha256sum <file>`
+3. Compare with upstream checksums (if provided)
+4. Use the calculated hash in the cask
+
+**NEVER:**
+- Skip SHA256 verification
+- Use `sha256 :no_check` unless absolutely necessary (requires justification)
+- Copy SHA256 from unreliable sources without verification
+
+Read [docs/CASK_CREATION_GUIDE.md](docs/CASK_CREATION_GUIDE.md) for detailed cask creation rules.
 
 ---
 
