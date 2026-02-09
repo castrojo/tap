@@ -109,13 +109,14 @@ func testFormula(cmd *cobra.Command, args []string) error {
 			if testCmd.Process != nil {
 				testCmd.Process.Kill()
 			}
-			fmt.Println("✓ Binary executes successfully (no flags)")
 			success = true
 		case err := <-done:
 			if err == nil {
-				fmt.Println("✓ Binary executes successfully (no flags)")
 				success = true
 			}
+		}
+		if success {
+			fmt.Println("✓ Binary executes successfully (no flags)")
 		}
 	}
 
@@ -176,15 +177,23 @@ func testCask(cmd *cobra.Command, args []string) error {
 	iconDir := filepath.Join(homeDir, ".local", "share", "icons")
 	if dirExists(iconDir) {
 		iconCount := 0
-		filepath.Walk(iconDir, func(path string, info os.FileInfo, err error) error {
+		if err := filepath.Walk(iconDir, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
-				return nil
+				return err
 			}
-			if strings.Contains(info.Name(), caskName) {
+			// Match cask name more precisely to avoid false positives
+			// Check if filename starts with caskName or contains caskName followed by a separator
+			name := info.Name()
+			if strings.HasPrefix(name, caskName) ||
+				strings.Contains(name, caskName+".") ||
+				strings.Contains(name, caskName+"-") ||
+				strings.Contains(name, caskName+"_") {
 				iconCount++
 			}
 			return nil
-		})
+		}); err != nil {
+			fmt.Printf("⚠ Warning: could not scan for icons: %v\n", err)
+		}
 
 		if iconCount > 0 {
 			fmt.Printf("✓ Found %d icon(s)\n", iconCount)
@@ -193,16 +202,18 @@ func testCask(cmd *cobra.Command, args []string) error {
 
 	// Try to find and test executable
 	var foundExecutable string
-	filepath.Walk(installDir, func(path string, info os.FileInfo, err error) error {
+	if err := filepath.Walk(installDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return nil
+			return err
 		}
 		if !info.IsDir() && isExecutable(path) && foundExecutable == "" {
 			foundExecutable = path
 			return filepath.SkipDir
 		}
 		return nil
-	})
+	}); err != nil {
+		fmt.Printf("⚠ Warning: could not scan for executables: %v\n", err)
+	}
 
 	if foundExecutable != "" {
 		fmt.Printf("✓ Found executable: %s\n", foundExecutable)
