@@ -1,4 +1,4 @@
-cask "sublime-text" do
+cask "sublime-text-linux" do
   version "4200"
   sha256 "36f69c551ad18ee46002be4d9c523fe545d93b67fea67beea731e724044b469f"
 
