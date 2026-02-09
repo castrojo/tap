@@ -75,7 +75,7 @@
       "automerge": true,
       "automergeType": "pr",
       "automergeStrategy": "squash",
-      "minimumReleaseAge": "1 day",
+      "minimumReleaseAge": "3 days",
       "schedule": ["at any time"],
       "labels": ["cask-update"]
     },
