@@ -156,7 +156,7 @@ Assisted-by: <Model> via <Tool>
 ## Update Strategy
 
 - **Patch releases** (1.0.0 → 1.0.1): Auto-merge after 3 hours
-- **Minor releases** (1.0.0 → 1.1.0): Auto-merge after 1 day
+- **Minor releases** (1.0.0 → 1.1.0): Auto-merge after 3 days
 - **Major releases** (1.0.0 → 2.0.0): Manual review required
 
 ## License
