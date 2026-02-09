@@ -43,11 +43,197 @@ sha256sum --check SHA256SUMS
 
 ## Table of Contents
 
-1. [Simple Binary](#simple-binary)
-2. [Multi-Binary Applications](#multi-binary-applications)
-3. [Binary with Resources](#binary-with-resources)
-4. [Tarball with Subdirectories](#tarball-with-subdirectories)
-5. [Wrapper Scripts](#wrapper-scripts)
+1. [XDG Base Directory Requirements](#xdg-base-directory-requirements) **← READ THIS FIRST**
+2. [Desktop Integration Pattern](#desktop-integration-pattern) **← GUI Applications**
+3. [Simple Binary](#simple-binary)
+4. [Multi-Binary Applications](#multi-binary-applications)
+5. [Binary with Resources](#binary-with-resources)
+6. [Tarball with Subdirectories](#tarball-with-subdirectories)
+7. [Wrapper Scripts](#wrapper-scripts)
+
+---
+
+## XDG Base Directory Requirements
+
+**⚠️ CRITICAL: Target systems use READ-ONLY root filesystems**
+
+Systems like Fedora Silverblue and Universal Blue have immutable filesystems. You CANNOT write to system directories.
+
+**ALL files MUST be installed to user home directory:**
+
+| Type | Location | Purpose |
+|------|----------|---------|
+| Binaries | `/home/linuxbrew/.linuxbrew/bin/` | Homebrew binaries (writable) |
+| Desktop Files | `~/.local/share/applications/` | GUI launcher integration |
+| Icons | `~/.local/share/icons/` | Application icons |
+| Config | `~/.config/app-name/` | Configuration files |
+| Cache | `~/.cache/app-name/` | Cache data |
+| Data | `~/.local/share/app-name/` | Application data |
+
+**NEVER attempt to install to:**
+- ❌ `/usr/share/applications/` - Read-only
+- ❌ `/usr/share/icons/` - Read-only
+- ❌ `/etc/` - Read-only
+- ❌ `/opt/` - Read-only
+
+---
+
+## Desktop Integration Pattern
+
+**Use this pattern for ALL GUI applications.**
+
+### When to Use This Pattern
+
+**Detection Rules:**
+- Application has a graphical user interface
+- Tarball includes a `.desktop` file
+- Application has an icon (`.png`, `.svg`, etc.)
+- Needs to appear in desktop environment application launchers
+
+### Complete Template
+
+```ruby
+cask "app-name-linux" do
+  version "1.0.0"
+  sha256 "SHA256_HASH_HERE"
+  
+  url "https://github.com/USERNAME/PROJECT/releases/download/v#{version}/app-name-linux-x64.tar.gz"
+  name "App Name"
+  desc "Brief description of what this application does"
+  homepage "https://github.com/USERNAME/PROJECT"
+  
+  # Binary installation (Homebrew handles this)
+  binary "app-name/bin/app-name"
+  
+  # Desktop file installation (XDG user directory)
+  artifact "app-name/app-name.desktop",
+           target: "#{Dir.home}/.local/share/applications/app-name.desktop"
+  
+  # Icon installation (XDG user directory)
+  artifact "app-name/icon.png",
+           target: "#{Dir.home}/.local/share/icons/app-name.png"
+  
+  preflight do
+    # Create required directories
+    FileUtils.mkdir_p "#{Dir.home}/.local/share/applications"
+    FileUtils.mkdir_p "#{Dir.home}/.local/share/icons"
+    
+    # Fix paths in desktop file
+    desktop_file = "#{staged_path}/app-name/app-name.desktop"
+    if File.exist?(desktop_file)
+      content = File.read(desktop_file)
+      
+      # Fix Exec path to point to Homebrew binary
+      updated_content = content.gsub(%r{/opt/app-name/app-name}, "#{HOMEBREW_PREFIX}/bin/app-name")
+      updated_content = updated_content.gsub(%r{/usr/bin/app-name}, "#{HOMEBREW_PREFIX}/bin/app-name")
+      
+      # Fix Icon path to point to user icons directory
+      updated_content = updated_content.gsub(/Icon=.*/, "Icon=#{Dir.home}/.local/share/icons/app-name.png")
+      
+      File.write(desktop_file, updated_content)
+    end
+  end
+  
+  # Clean up user data on zap
+  zap trash: [
+    "~/.cache/app-name",
+    "~/.config/app-name",
+    "~/.local/share/app-name",
+  ]
+end
+```
+
+### Real Example: Sublime Text
+
+```ruby
+cask "sublime-text-linux" do
+  version "4200"
+  sha256 "36f69c551ad18ee46002be4d9c523fe545d93b67fea67beea731e724044b469f"
+
+  url "https://download.sublimetext.com/sublime_text_build_#{version}_x64.tar.xz"
+  name "Sublime Text"
+  desc "Sophisticated text editor for code, markup and prose"
+  homepage "https://www.sublimetext.com/"
+
+  binary "sublime_text/sublime_text", target: "subl"
+  
+  artifact "sublime_text/sublime_text.desktop",
+           target: "#{Dir.home}/.local/share/applications/sublime-text.desktop"
+  artifact "sublime_text/Icon/128x128/sublime-text.png",
+           target: "#{Dir.home}/.local/share/icons/sublime-text.png"
+
+  preflight do
+    FileUtils.mkdir_p "#{Dir.home}/.local/share/applications"
+    FileUtils.mkdir_p "#{Dir.home}/.local/share/icons"
+
+    desktop_file = "#{staged_path}/sublime_text/sublime_text.desktop"
+    if File.exist?(desktop_file)
+      content = File.read(desktop_file)
+      updated_content = content.gsub(%r{/opt/sublime_text/sublime_text}, "#{HOMEBREW_PREFIX}/bin/subl")
+      File.write(desktop_file, updated_content)
+    end
+  end
+
+  zap trash: [
+    "~/.cache/sublime-text",
+    "~/.config/sublime-text",
+  ]
+end
+```
+
+### Desktop File Path Patterns
+
+Common desktop file locations in tarballs:
+```
+app-name/app-name.desktop
+app-name/share/applications/app-name.desktop
+app-name/resources/app-name.desktop
+app-name.desktop (at root)
+```
+
+### Icon Path Patterns
+
+Common icon locations in tarballs:
+```
+app-name/icon.png
+app-name/share/icons/hicolor/128x128/apps/app-name.png
+app-name/Icon/128x128/app-name.png
+app-name/resources/icon.png
+```
+
+### Common Exec Path Replacements
+
+Desktop files often have hardcoded paths that need fixing:
+```ruby
+# Common patterns to replace:
+updated_content.gsub(%r{/opt/app-name/app-name}, "#{HOMEBREW_PREFIX}/bin/app-name")
+updated_content.gsub(%r{/usr/local/bin/app-name}, "#{HOMEBREW_PREFIX}/bin/app-name")
+updated_content.gsub(%r{/usr/bin/app-name}, "#{HOMEBREW_PREFIX}/bin/app-name")
+updated_content.gsub(%r{Exec=app-name}, "Exec=#{HOMEBREW_PREFIX}/bin/app-name")
+```
+
+### Troubleshooting Desktop Integration
+
+**Desktop file not appearing:**
+```bash
+# Verify file exists
+ls -la ~/.local/share/applications/app-name.desktop
+
+# Check desktop file syntax
+desktop-file-validate ~/.local/share/applications/app-name.desktop
+
+# Refresh desktop database
+update-desktop-database ~/.local/share/applications/
+```
+
+**Icon not appearing:**
+```bash
+# Verify icon exists
+ls -la ~/.local/share/icons/app-name.png
+
+# Update icon cache (if using hicolor theme)
+gtk-update-icon-cache ~/.local/share/icons/hicolor/
+```
 
 ---
 

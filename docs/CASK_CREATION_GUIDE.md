@@ -7,6 +7,32 @@
 - ✗ NEVER use macOS downloads (`.dmg`, `.pkg`, macOS `.zip`)
 - ✗ NEVER use Windows downloads (`.exe`, `.msi`)
 
+## 🔒 Read-Only Filesystem Constraints
+
+**CRITICAL: Target systems use immutable/read-only root filesystems (Fedora Silverblue, Universal Blue, etc.)**
+
+**ALL files MUST be installed in the user's home directory:**
+- ✓ `~/.local/bin/` - User binaries
+- ✓ `~/.local/share/applications/` - Desktop files
+- ✓ `~/.local/share/icons/` - Application icons
+- ✓ `~/.config/` - Configuration files
+- ✓ `~/.cache/` - Cache files
+- ✗ NEVER install to `/usr/`, `/opt/`, `/etc/` (filesystem is read-only)
+- ✗ NEVER install to system directories outside `$HOME`
+
+**XDG Base Directory Specification:**
+Follow the [XDG Base Directory specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html):
+
+| Directory | Environment Variable | Default | Purpose |
+|-----------|---------------------|---------|---------|
+| Data | `$XDG_DATA_HOME` | `~/.local/share` | Application data files |
+| Config | `$XDG_CONFIG_HOME` | `~/.config` | Configuration files |
+| Cache | `$XDG_CACHE_HOME` | `~/.cache` | Non-essential cached data |
+| State | `$XDG_STATE_HOME` | `~/.local/state` | State data (logs, history) |
+
+**Homebrew Compatibility:**
+Homebrew installs to `/home/linuxbrew/.linuxbrew/` which IS writable, but cask artifacts (desktop files, icons, etc.) MUST follow XDG paths in the user's home directory.
+
 ## Linux Cask Naming Convention
 
 **ALL casks in this tap MUST use the `-linux` suffix in their token.**
@@ -54,6 +80,111 @@ Use this strict priority order when selecting download format:
 **3. Other formats** - Only with explicit justification
   - AppImage, snap, flatpak: Case-by-case basis
   - RPM: Generally avoid (requires conversion)
+
+## Desktop Integration (GUI Applications)
+
+**ALL GUI applications MUST install desktop files and icons to XDG directories:**
+
+### Desktop Files
+Desktop files enable GUI application launchers (GNOME, KDE, etc.) to find and display applications.
+
+**Location:** `~/.local/share/applications/`
+
+**Implementation:**
+```ruby
+# Install desktop file
+artifact "path/to/app.desktop",
+         target: "#{Dir.home}/.local/share/applications/app-name.desktop"
+
+# Fix paths in preflight
+preflight do
+  FileUtils.mkdir_p "#{Dir.home}/.local/share/applications"
+  
+  desktop_file = "#{staged_path}/path/to/app.desktop"
+  if File.exist?(desktop_file)
+    content = File.read(desktop_file)
+    # Fix Exec path to point to Homebrew binary
+    updated_content = content.gsub(%r{/opt/app/binary}, "#{HOMEBREW_PREFIX}/bin/app-name")
+    # Fix Icon path if needed
+    updated_content = updated_content.gsub(%r{/opt/app/icon}, "#{Dir.home}/.local/share/icons/app-name")
+    File.write(desktop_file, updated_content)
+  end
+end
+```
+
+### Icons
+**Location:** `~/.local/share/icons/` or `~/.local/share/icons/hicolor/`
+
+**Implementation:**
+```ruby
+# Simple icon installation
+artifact "path/to/icon.png",
+         target: "#{Dir.home}/.local/share/icons/app-name.png"
+
+# Or follow hicolor theme spec (preferred)
+artifact "path/to/128x128/icon.png",
+         target: "#{Dir.home}/.local/share/icons/hicolor/128x128/apps/app-name.png"
+
+preflight do
+  FileUtils.mkdir_p "#{Dir.home}/.local/share/icons"
+  # Or for hicolor:
+  # FileUtils.mkdir_p "#{Dir.home}/.local/share/icons/hicolor/128x128/apps"
+end
+```
+
+### Complete Example
+
+```ruby
+cask "myapp-linux" do
+  version "1.0.0"
+  sha256 "abc123..."
+
+  url "https://example.com/myapp-linux-x64.tar.gz"
+  name "My Application"
+  desc "Description of the application"
+  homepage "https://example.com"
+
+  binary "myapp/bin/myapp"
+  
+  # Desktop integration
+  artifact "myapp/myapp.desktop",
+           target: "#{Dir.home}/.local/share/applications/myapp.desktop"
+  artifact "myapp/icon.png",
+           target: "#{Dir.home}/.local/share/icons/myapp.png"
+
+  preflight do
+    FileUtils.mkdir_p "#{Dir.home}/.local/share/applications"
+    FileUtils.mkdir_p "#{Dir.home}/.local/share/icons"
+
+    # Fix paths in desktop file
+    desktop_file = "#{staged_path}/myapp/myapp.desktop"
+    if File.exist?(desktop_file)
+      content = File.read(desktop_file)
+      updated_content = content.gsub(%r{/opt/myapp/myapp}, "#{HOMEBREW_PREFIX}/bin/myapp")
+      updated_content = updated_content.gsub(/Icon=.*/, "Icon=#{Dir.home}/.local/share/icons/myapp.png")
+      File.write(desktop_file, updated_content)
+    end
+  end
+
+  zap trash: [
+    "~/.cache/myapp",
+    "~/.config/myapp",
+  ]
+end
+```
+
+### Why This Matters
+
+**Read-Only Root Filesystem:**
+- Systems like Fedora Silverblue, Universal Blue use immutable filesystems
+- Cannot write to `/usr/share/applications/`, `/usr/share/icons/`, etc.
+- MUST use XDG user directories
+
+**User Experience:**
+- Desktop files enable GUI launcher integration
+- Icons appear in application menus
+- Applications integrate with the desktop environment
+- Without these, users must launch from terminal only
 
 ## Checksum Verification (MANDATORY)
 

@@ -7,6 +7,24 @@
 - ✗ NEVER use macOS downloads (`.dmg`, `.pkg`, `-darwin-`, `-macos-`)
 - ✗ NEVER use Windows downloads (`.exe`, `.msi`, `-windows-`)
 
+**⚠️ READ-ONLY FILESYSTEM CONSTRAINT ⚠️**
+
+Target systems use **immutable/read-only root filesystems** (Fedora Silverblue, Universal Blue, etc.).
+
+**CRITICAL: ALL files MUST be installed to user home directory:**
+- ✓ `~/.local/share/applications/` - Desktop files (GUI launcher integration)
+- ✓ `~/.local/share/icons/` - Application icons
+- ✓ `~/.config/` - Configuration files
+- ✓ `~/.cache/` - Cache data
+- ✗ NEVER install to `/usr/`, `/opt/`, `/etc/` (filesystem is read-only!)
+
+**For GUI applications:**
+- MUST install `.desktop` file to `~/.local/share/applications/`
+- MUST install icon to `~/.local/share/icons/`
+- MUST fix paths in `.desktop` file during `preflight`
+
+See [docs/CASK_CREATION_GUIDE.md](docs/CASK_CREATION_GUIDE.md) for detailed desktop integration patterns.
+
 ## Package Format Priority
 
 When packaging software, use this strict priority order:
