@@ -23,6 +23,17 @@ brew install package-name           # Formula (CLI tool)
 brew install --cask app-name        # Cask (GUI app)
 ```
 
+### Available Packages
+
+#### GUI Applications (Casks)
+
+**Sublime Text** - Sophisticated text editor for code, markup and prose
+```bash
+brew install --cask sublime-text
+```
+
+After installation, Sublime Text can be launched from the command line with `subl`.
+
 ### Request a Package
 
 [Create an issue](../../issues/new/choose) with:
