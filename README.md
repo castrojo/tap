@@ -103,8 +103,9 @@ See [tap-tools/README.md](tap-tools/README.md) for detailed documentation.
 ### Documentation
 
 **For AI Agents & Copilot:**
-- **[.github/copilot-instructions.md](.github/copilot-instructions.md)** - Comprehensive agent instructions (auto-loaded by GitHub Copilot)
+- **[.github/skills/homebrew-packaging/SKILL.md](.github/skills/homebrew-packaging/SKILL.md)** - **START HERE** - Mandatory 6-step workflow (load this skill first!)
 - **[AGENTS.md](AGENTS.md)** - Repository-specific agent guidance and constraints
+- **[.github/copilot-instructions.md](.github/copilot-instructions.md)** - Quick reference workflow (auto-loaded by GitHub Copilot)
 
 **For Developers:**
 - **[docs/AGENT_GUIDE.md](docs/AGENT_GUIDE.md)** - Comprehensive packaging guide
@@ -158,7 +159,7 @@ All packages must pass:
 4. Wait for CI checks and code review
 5. Merge after approval
 
-**For AI agents:** Read `.github/copilot-instructions.md` and `AGENTS.md` before starting work.
+**For AI agents:** Read `.github/skills/homebrew-packaging/SKILL.md` (mandatory workflow), `AGENTS.md`, and `.github/copilot-instructions.md` before starting work.
 
 **Commit format:** Use [Conventional Commits](https://www.conventionalcommits.org/) with AI attribution:
 ```

@@ -1,5 +1,15 @@
 # Cask Creation Guide - Critical Information
 
+## ⚠️ AGENTS: READ THE PACKAGING SKILL FIRST ⚠️
+
+**If you are an AI agent creating casks, you MUST follow the packaging skill workflow:**
+
+📖 **`.github/skills/homebrew-packaging/SKILL.md`** - MANDATORY 6-step process
+
+**The skill contains the complete workflow. This guide provides supplementary cask-specific details.**
+
+---
+
 **⚠️ LINUX ONLY REPOSITORY ⚠️**
 
 **THIS TAP IS LINUX-ONLY. ALL CASKS MUST USE LINUX DOWNLOADS.**

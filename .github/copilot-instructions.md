@@ -1,5 +1,24 @@
 # Copilot Instructions for homebrew-tap
 
+## ⚠️ MANDATORY: LOAD THE PACKAGING SKILL FIRST ⚠️
+
+**BEFORE doing ANY package work, you MUST load the homebrew-packaging skill:**
+
+1. **Read the skill:** `.github/skills/homebrew-packaging/SKILL.md`
+2. **Follow its 6-step workflow exactly**
+3. **Complete ALL mandatory checkpoints** (especially validation)
+
+**The skill contains:**
+- Critical constraints (Linux-only, read-only filesystem, XDG paths)
+- Mandatory 6-step workflow (generate → validate → review → test → commit → PR)
+- All packaging requirements and rules
+
+**Also read:** `AGENTS.md` in the repository root for additional agent-specific guidance.
+
+**The skill and AGENTS.md are your authoritative sources. This file is a quick reference only.**
+
+---
+
 ## 🚨 MANDATORY WORKFLOW - FOLLOW EVERY STEP
 
 **THIS IS NOT OPTIONAL. CI WILL FAIL IF YOU SKIP ANY STEP.**

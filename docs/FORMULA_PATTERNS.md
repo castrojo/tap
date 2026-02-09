@@ -1,5 +1,15 @@
 # Formula Patterns
 
+## ⚠️ AGENTS: READ THE PACKAGING SKILL FIRST ⚠️
+
+**If you are an AI agent creating formulas, you MUST follow the packaging skill workflow:**
+
+📖 **`.github/skills/homebrew-packaging/SKILL.md`** - MANDATORY 6-step process
+
+**The skill contains the complete workflow. This guide provides copy-paste templates.**
+
+---
+
 Complete, copy-paste ready formula templates for common build systems. Each pattern includes detection rules, common variations, and troubleshooting guidance.
 
 ## Table of Contents

@@ -1,5 +1,21 @@
 # Agent Guide: Automated Homebrew Packaging
 
+## ⚠️ MANDATORY: READ THE PACKAGING SKILL FIRST ⚠️
+
+**BEFORE using this guide, you MUST read the packaging skill:**
+
+📖 **`.github/skills/homebrew-packaging/SKILL.md`** - Contains the authoritative 6-step workflow
+
+**The skill is mandatory for all packaging work. It includes:**
+- Critical constraints (Linux-only, read-only filesystem, XDG paths)
+- Step-by-step workflow with checkpoints
+- Validation requirements
+- All official Homebrew standards
+
+**This guide provides additional context and examples. When in doubt, follow the skill.**
+
+---
+
 **⚠️ LINUX ONLY REPOSITORY ⚠️**
 
 **THIS TAP IS LINUX-ONLY. ALL PACKAGES MUST USE LINUX BINARIES.**

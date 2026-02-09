@@ -1,5 +1,25 @@
 # Agent Instructions
 
+⚠️ **MANDATORY: LOAD THE PACKAGING SKILL FIRST** ⚠️
+
+**CRITICAL: Before doing ANY package-related work (creating, updating, or debugging packages), you MUST:**
+
+1. **Load the packaging skill:** Read `.github/skills/homebrew-packaging/SKILL.md`
+2. **Follow its workflow exactly:** The skill contains the mandatory 6-step process
+3. **Complete ALL checkpoints:** Especially validation before every commit
+
+**When to load the skill:**
+- ✅ User mentions: "add", "create", "package", "cask", "formula", "update", "fix"
+- ✅ User provides a GitHub release URL or repository link
+- ✅ User references `Casks/` or `Formula/` directories
+- ✅ User asks about tap-tools, tap-cask, or tap-formula
+- ✅ User assigns you a GitHub issue about packages
+- ✅ **ANY** work involving Homebrew packages
+
+**The skill is the authoritative source. If this file conflicts with the skill, follow the skill.**
+
+---
+
 **⚠️ LINUX ONLY REPOSITORY ⚠️**
 
 **THIS TAP IS LINUX-ONLY. ALL PACKAGES MUST USE LINUX BINARIES.**
