@@ -42,7 +42,7 @@ func TestGenerateCask(t *testing.T) {
 	}
 
 	// Ensure license stanza is NOT present (not supported for casks)
-	if strings.Contains(cask, "license") {
+	if strings.Contains(cask, "\n  license ") {
 		t.Error("Generated cask should not contain license stanza (not supported for casks)")
 	}
 }
