@@ -34,23 +34,30 @@ An agent will research and create the package automatically.
 
 ## For Package Maintainers
 
-See [docs/AGENT_GUIDE.md](docs/AGENT_GUIDE.md) (coming soon) for comprehensive packaging instructions.
+See [docs/AGENT_GUIDE.md](docs/AGENT_GUIDE.md) for comprehensive packaging instructions.
 
 ### Quick Start
 
 ```bash
-# Create formula from GitHub repository (coming soon)
+# Create formula from GitHub repository
 ./scripts/new-formula.sh package-name https://github.com/user/repo
 
-# Create cask from GitHub repository (coming soon)
+# Create cask from GitHub repository
 ./scripts/new-cask.sh app-name https://github.com/user/repo
 
-# Process package request from issue (coming soon)
+# Process package request from issue
 ./scripts/from-issue.sh 42
 
-# Validate all packages (coming soon)
+# Validate all packages
 ./scripts/validate-all.sh
 ```
+
+### Documentation
+
+- **[AGENT_GUIDE.md](docs/AGENT_GUIDE.md)** - Comprehensive guide for AI-assisted packaging
+- **[FORMULA_PATTERNS.md](docs/FORMULA_PATTERNS.md)** - Formula templates for 6 build systems
+- **[CASK_PATTERNS.md](docs/CASK_PATTERNS.md)** - Cask templates for 5 installation scenarios
+- **[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** - Solutions for common issues
 
 ## Quality Standards
 
