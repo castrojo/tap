@@ -14,21 +14,30 @@ This document consolidates all implementation tasks from various plans into a si
 
 **From:** [plans/2026-02-09-zero-error-packages-design.md](plans/2026-02-09-zero-error-packages-design.md)  
 **Effort:** 2 hours  
-**Status:** ⏳ TODO
+**Status:** ✅ COMPLETED (2026-02-09)
 
 **Subtasks:**
-- [ ] Update `tap-cask` to run validation after generation
-  - [ ] Call `tap-validate` internally after writing file
-  - [ ] Show verbose output (all fixes applied)
-  - [ ] Exit with error if validation fails
-  - [ ] Auto-rewrite file with fixes
-- [ ] Update `tap-formula` with same validation logic
-  - [ ] Call `tap-validate` internally after writing file
-  - [ ] Show verbose output
-  - [ ] Exit with error if validation fails
-  - [ ] Auto-rewrite file with fixes
-- [ ] Test both tools generate valid, commit-ready files
-- [ ] Update tool README with new behavior
+- [x] Update `tap-cask` to run validation after generation
+  - [x] Call `tap-validate` internally after writing file
+  - [x] Show verbose output (all fixes applied)
+  - [x] Exit with error if validation fails
+  - [x] Auto-rewrite file with fixes
+- [x] Update `tap-formula` with same validation logic
+  - [x] Call `tap-validate` internally after writing file
+  - [x] Show verbose output
+  - [x] Exit with error if validation fails
+  - [x] Auto-rewrite file with fixes
+- [x] Test both tools generate valid, commit-ready files
+- [x] Update tool README with new behavior
+
+**Improvements Made:**
+- Fixed validation to skip `brew audit` during generation (requires tapped repo)
+- Added magic comments to templates (# typed: strict, # frozen_string_literal: true)
+- Implemented cleanDesc function to remove articles and trailing periods
+- Added proper homepage fallback for empty homepages
+- Fixed tap-formula asset URL population bug
+- Added top-level documentation comment for formulas
+- Sorted zap trash arrays alphabetically
 
 **Acceptance Criteria:**
 - ✅ Generated files always pass validation
@@ -42,7 +51,9 @@ This document consolidates all implementation tasks from various plans into a si
 
 **From:** [GITHUB_ACTIONS_POLICY.md](GITHUB_ACTIONS_POLICY.md)  
 **Effort:** 1 hour  
-**Status:** ⏳ TODO
+**Status:** ✅ COMPLETED (2026-02-09)
+
+**Note:** Already completed in commit 4b55bf2 "chore(ci): pin GitHub Actions to commit SHAs"
 
 **Subtasks:**
 - [ ] Get current SHAs for all actions
@@ -80,7 +91,9 @@ This document consolidates all implementation tasks from various plans into a si
 
 **From:** [GO_MIGRATION_PLAN.md](GO_MIGRATION_PLAN.md)  
 **Effort:** 2-3 hours  
-**Status:** ⏳ TODO
+**Status:** ✅ COMPLETED (2026-02-09)
+
+**Note:** Already completed in commit 4248581 "chore: remove deprecated bash scripts"
 
 **Subtasks:**
 - [ ] **Step 1: Audit** - List all bash scripts and their status
@@ -268,11 +281,11 @@ This document consolidates all implementation tasks from various plans into a si
 
 | Priority | Total Tasks | Completed | Remaining | % Complete |
 |----------|-------------|-----------|-----------|------------|
-| 🔴 P1    | 3           | 0         | 3         | 0%         |
+| 🔴 P1    | 3           | 3         | 0         | 100%       |
 | 🟡 P2    | 1           | 0         | 1         | 0%         |
 | 🟢 P3    | 2           | 0         | 2         | 0%         |
 | 🔵 P4    | 2           | 0         | 2         | 0%         |
-| **Total**| **8**       | **0**     | **8**     | **0%**     |
+| **Total**| **8**       | **3**     | **5**     | **38%**    |
 
 ### Sprint Plan (Aggressive Execution)
 
@@ -299,26 +312,22 @@ Update this document:
 
 ## Quick Reference: Next Actions
 
-**Right now (next session):**
-1. ✅ Complete Task 1.1: tap-tools auto-validation
-   - Start with tap-cask, then tap-formula
-   - Test thoroughly
-   - Ship immediately if tests pass (aggressive)
+**🎉 All Priority 1 tasks complete!**
 
-2. ✅ Complete Task 1.2: SHA pinning
-   - Quick task, security improvement
-   - No dependencies
+**Next up (Priority 2):**
+1. ⏳ Task 2.1: CI Optimization Experiment
+   - Measure current CI time
+   - Test simple PATH optimization
+   - Document time savings
+   - Ship if ≥30s improvement
 
-**Then:**
-3. ✅ Complete Task 1.3: Bash script deprecation
-   - Requires verification step
-   - Document thoroughly
-   - Ship aggressively
+**Then (Priority 3 - when valuable):**
+2. Task 3.1: Investigate tap-cask metadata enhancement
+3. Task 3.2: Renovate SHA256 automation (optional, current works fine)
 
-**After P1 complete:**
-4. ✅ Run Task 2.1: CI optimization experiment
-   - Potential 30+ second savings
-   - Ship immediately if successful
+**Future (Priority 4 - blocked/deferred):**
+4. Task 4.1: Phase 3 smoke testing (waiting for zero style failures)
+5. Task 4.2: Offline testing (investigate Task 3.1 first)
 
 ---
 
@@ -342,5 +351,5 @@ Update this document:
 
 ---
 
-**Last Updated:** 2026-02-09  
-**Next Review:** After completing Priority 1 tasks
+**Last Updated:** 2026-02-09 (after completing Priority 1 tasks)  
+**Next Review:** After completing Task 2.1 (CI optimization)
