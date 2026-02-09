@@ -8,8 +8,6 @@ cask "sublime-text" do
   desc "Sophisticated text editor for code, markup and prose"
   homepage "https://www.sublimetext.com/"
 
-  depends_on :linux
-
   binary "sublime_text/sublime_text", target: "subl"
 
   test do
