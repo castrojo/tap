@@ -1,8 +1,8 @@
 # Implementation Task List
 
 **Generated:** 2026-02-09  
-**Purpose:** Actionable task list for all planned work  
-**Status:** Ready for execution
+**Updated:** 2026-02-09  
+**Status:** 62.5% complete (5/8 tasks)
 
 This document consolidates all implementation tasks from various plans into a single, prioritized checklist.
 
@@ -194,35 +194,45 @@ This document consolidates all implementation tasks from various plans into a si
 
 **From:** User feedback on offline testing plan  
 **Effort:** 2 hours  
-**Status:** ⏳ TODO (Investigation phase)
+**Status:** ✅ COMPLETED (2026-02-09)
 
-**Purpose:** Determine if we need elaborate offline testing infrastructure, or if enhancing tap-cask metadata output is sufficient.
+**Result:** Implemented archive inspection in tap-cask to detect actual binary paths, desktop files, and icons. This significantly improves cask quality without requiring complex offline infrastructure. Full offline testing deferred (YAGNI).
+
+**Implementation:**
+- Created `tap-tools/internal/archive` package for tar archive inspection
+- Enhanced `tap-cask` to inspect downloaded archives
+- Added intelligent binary detection with name matching
+- Integrated desktop file and icon detection
+- Added dependency: `github.com/ulikunitz/xz` for .tar.xz support
 
 **Subtasks:**
-- [ ] **Review current tap-cask output**
-  - [ ] What metadata is currently shown?
-  - [ ] What's missing that agents might need?
-- [ ] **Identify gaps**
-  - [ ] Has Copilot created incomplete casks due to missing metadata?
-  - [ ] What desktop integration info is missing?
-  - [ ] What binary path info is missing?
-- [ ] **Design enhanced output**
-  - [ ] Proposal: Add `--verbose` flag to show more metadata
-  - [ ] Proposal: Generate `.metadata.json` file alongside `.rb` file
-  - [ ] Alternative: Improve in-file comments with structure info
-- [ ] **Prototype solution**
-  - [ ] Implement simplest approach
-  - [ ] Test with a few casks
-  - [ ] Evaluate if this solves the problem
-- [ ] **Decision**
-  - [ ] If enhanced metadata sufficient: close offline testing plan
-  - [ ] If not sufficient: revisit offline testing plan later
-  - [ ] Document decision and rationale
+- [x] **Review current tap-cask output**
+  - [x] Generated sample casks, identified guessed paths as problem
+  - [x] Desktop integration not implemented
+- [x] **Identify gaps**
+  - [x] Binary paths often wrong (guessed from repo name)
+  - [x] No desktop file detection
+  - [x] No icon detection
+  - [x] No visibility into archive structure
+- [x] **Design enhanced output**
+  - [x] Designed archive inspection approach
+  - [x] Smart binary detection with filtering
+  - [x] Best binary selection by name matching
+- [x] **Prototype solution**
+  - [x] Implemented archive package
+  - [x] Enhanced tap-cask generator
+  - [x] Tested with bat, hyperfine, ventoy
+  - [x] All tests successful
+- [x] **Decision**
+  - [x] Archive inspection solves immediate problem
+  - [x] Offline testing infrastructure deferred (YAGNI)
+  - [x] Documented in observations/2026-02-09-tap-cask-metadata-enhancement.md
 
 **Acceptance Criteria:**
 - ✅ Decision documented: enhance metadata vs full offline testing
-- ✅ If metadata enhancement: implemented and tested
-- ✅ If offline testing needed: plan updated with timeline
+- ✅ Metadata enhancement implemented and tested
+- ✅ Generated casks have accurate binary paths
+- ✅ Desktop integration detected when present
 
 ---
 

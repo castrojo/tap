@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/castrojo/tap-tools/internal/archive"
 	"github.com/castrojo/tap-tools/internal/checksum"
 	"github.com/castrojo/tap-tools/internal/desktop"
 	"github.com/castrojo/tap-tools/internal/github"
@@ -151,10 +153,52 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// TODO: Extract archive and detect desktop files/icons
-	// For now, we'll create a basic cask without desktop integration
+	// Extract archive and inspect contents
+	fmt.Println(titleStyle.Render("\n📦 Inspecting archive contents..."))
+	files, err := archive.ListFiles(data, bestAsset.Name)
+	if err != nil {
+		fmt.Println(infoStyle.Render(fmt.Sprintf("✗ Could not list archive contents: %v", err)))
+		fmt.Println(infoStyle.Render("  Will use default paths"))
+		files = []string{} // Empty list to fall back to defaults
+	} else {
+		fmt.Println(successStyle.Render(fmt.Sprintf("✓ Found %d files in archive", len(files))))
+	}
+
+	// Detect binaries
+	var detectedBinaries []string
+	if len(files) > 0 {
+		detectedBinaries = archive.DetectBinaries(files)
+		if len(detectedBinaries) > 0 {
+			fmt.Println(successStyle.Render(fmt.Sprintf("✓ Detected %d binary file(s)", len(detectedBinaries))))
+			for _, bin := range detectedBinaries {
+				fmt.Println(infoStyle.Render(fmt.Sprintf("  - %s", bin)))
+			}
+		} else {
+			fmt.Println(infoStyle.Render("✗ No binary files detected"))
+		}
+	}
+
+	// Detect desktop integration
 	fmt.Println(titleStyle.Render("\n🖼️  Detecting desktop integration..."))
-	fmt.Println(infoStyle.Render("✗ Desktop file detection not yet implemented"))
+	var desktopFile *desktop.DesktopFileInfo
+	var icon *desktop.IconInfo
+
+	if len(files) > 0 {
+		desktopFile, _ = desktop.DetectDesktopFile(files)
+		icon, _ = desktop.DetectIcon(files)
+
+		if desktopFile != nil {
+			fmt.Println(successStyle.Render(fmt.Sprintf("✓ Found desktop file: %s", desktopFile.Path)))
+		} else {
+			fmt.Println(infoStyle.Render("✗ No desktop file found"))
+		}
+
+		if icon != nil {
+			fmt.Println(successStyle.Render(fmt.Sprintf("✓ Found icon: %s (size: %s)", icon.Path, icon.Size)))
+		} else {
+			fmt.Println(infoStyle.Render("✗ No icon found"))
+		}
+	}
 
 	// Determine package name
 	pkgName := flagName
@@ -172,9 +216,45 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 		caskData.License = repository.License
 	}
 
-	// TODO: Infer binary path - for now use a placeholder
-	caskData.BinaryPath = fmt.Sprintf("%s/%s", repo, pkgName)
-	caskData.BinaryName = pkgName
+	// Set binary path from detection
+	if len(detectedBinaries) > 0 {
+		// Select the best binary based on package name
+		bestBinary := archive.SelectBestBinary(detectedBinaries, pkgName)
+		caskData.BinaryPath = bestBinary
+
+		// Extract just the binary name (without path)
+		binaryName := filepath.Base(bestBinary)
+
+		// Prefer package name if binary name matches roughly
+		if strings.Contains(strings.ToLower(binaryName), strings.ToLower(pkgName)) ||
+			strings.Contains(strings.ToLower(pkgName), strings.ToLower(binaryName)) {
+			caskData.BinaryName = pkgName
+		} else {
+			caskData.BinaryName = binaryName
+		}
+
+		fmt.Println(infoStyle.Render(fmt.Sprintf("  Binary: %s → %s", caskData.BinaryPath, caskData.BinaryName)))
+	} else {
+		// Fallback to guessing
+		rootDir := archive.FindRootDirectory(files)
+		if rootDir != "" {
+			caskData.BinaryPath = fmt.Sprintf("%s%s", rootDir, pkgName)
+		} else {
+			caskData.BinaryPath = pkgName
+		}
+		caskData.BinaryName = pkgName
+		fmt.Println(infoStyle.Render(fmt.Sprintf("  Binary (guessed): %s → %s", caskData.BinaryPath, caskData.BinaryName)))
+	}
+
+	// Set desktop file if found
+	if desktopFile != nil {
+		caskData.SetDesktopFile(desktopFile.Path, desktopFile.Filename)
+	}
+
+	// Set icon if found
+	if icon != nil {
+		caskData.SetIcon(icon.Path, icon.Filename)
+	}
 
 	// Infer zap trash paths
 	caskData.InferZapTrash()
@@ -226,11 +306,4 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 	fmt.Println(infoStyle.Render("   3. Commit and push"))
 
 	return nil
-}
-
-// Helper to detect desktop files (placeholder - will be moved to desktop package)
-func detectDesktopFiles(archiveFiles []string) (*desktop.DesktopFileInfo, *desktop.IconInfo, error) {
-	desktopFile, _ := desktop.DetectDesktopFile(archiveFiles)
-	icon, _ := desktop.DetectIcon(archiveFiles)
-	return desktopFile, icon, nil
 }
