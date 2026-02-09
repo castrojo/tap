@@ -37,8 +37,13 @@ jobs:
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             # Extract formula/cask name from path (e.g., Formula/foo.rb -> foo)
             name=$(basename "$file" .rb)
-            echo "Auditing $name (from $file)"
-            brew audit --strict --online "$name"
+            if [[ "$file" == Casks/* ]]; then
+              echo "Auditing cask $name (from $file)"
+              brew audit --cask --strict --online "$name"
+            elif [[ "$file" == Formula/* ]]; then
+              echo "Auditing formula $name (from $file)"
+              brew audit --strict --online "$name"
+            fi
           done
 
       - name: Run brew style
@@ -47,6 +52,11 @@ jobs:
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             # Extract formula/cask name from path (e.g., Formula/foo.rb -> foo)
             name=$(basename "$file" .rb)
-            echo "Checking style for $name (from $file)"
-            brew style "$name"
+            if [[ "$file" == Casks/* ]]; then
+              echo "Checking style for cask $name (from $file)"
+              brew style --cask "$name"
+            elif [[ "$file" == Formula/* ]]; then
+              echo "Checking style for formula $name (from $file)"
+              brew style "$name"
+            fi
           done

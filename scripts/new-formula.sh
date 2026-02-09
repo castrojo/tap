@@ -146,6 +146,7 @@ class $CLASS_NAME < Formula
   desc "$DESCRIPTION"
   homepage "$HOMEPAGE"
   url "$TARBALL_URL"
+  version "$VERSION"
   sha256 "$SHA256"
 $LICENSE_LINE
 

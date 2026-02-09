@@ -19,20 +19,20 @@
   "regexManagers": [
     {
       // Match Homebrew Formula files
+      // Standard order: url, version, sha256
       "fileMatch": ["^Formula/.+\\.rb$"],
       "matchStrings": [
-        // Capture GitHub repo, version, and sha256 together
         "url\\s+[\"']https://github\\.com/(?<depName>[^/]+/[^/]+)/.*[\"']\\s*\\n\\s*version\\s+[\"'](?<currentValue>[^\"']+)[\"']\\s*\\n\\s*sha256\\s+[\"'](?<currentDigest>[^\"']+)[\"']"
       ],
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v?(?<version>.+)$"
     },
     {
-      // Match Homebrew Cask files
+      // Match Homebrew Cask files  
+      // Standard order: version, sha256, url
       "fileMatch": ["^Casks/.+\\.rb$"],
       "matchStrings": [
-        // Capture GitHub repo, version, and sha256 together
-        "url\\s+[\"']https://github\\.com/(?<depName>[^/]+/[^/]+)/.*[\"']\\s*\\n\\s*version\\s+[\"'](?<currentValue>[^\"']+)[\"']\\s*\\n\\s*sha256\\s+[\"'](?<currentDigest>[^\"']+)[\"']"
+        "version\\s+[\"'](?<currentValue>[^\"']+)[\"']\\s*\\n\\s*sha256\\s+[\"'](?<currentDigest>[^\"']+)[\"']\\s*\\n\\s*url\\s+[\"']https://github\\.com/(?<depName>[^/]+/[^/]+)/.*[\"']"
       ],
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v?(?<version>.+)$"

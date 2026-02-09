@@ -2,16 +2,15 @@ name: 📦 Package Request
 description: Request a new package to be added to the tap
 body:
   - type: input
-    id: name
-    attributes:
-      label: Package Name
-
-  - type: input
     id: url
     attributes:
-      label: URL
+      label: Repository or Homepage URL
+      description: GitHub repository or official website. The package name will be derived from the project itself.
+      placeholder: "https://github.com/user/project"
 
   - type: textarea
     id: description
     attributes:
       label: Description
+      description: What does this package do?
+      placeholder: "A brief description of the package's purpose"

@@ -37,11 +37,10 @@ After installation, Sublime Text can be launched from the command line with `sub
 ### Request a Package
 
 [Create an issue](../../issues/new/choose) with:
-- Package name
 - Repository or homepage URL
 - Brief description
 
-An agent will research and create the package automatically.
+The package name will be automatically derived from the repository name. An agent will research and create the package automatically.
 
 ## For Package Maintainers
 
