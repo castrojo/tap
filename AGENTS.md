@@ -45,6 +45,23 @@ Target systems use **immutable/read-only root filesystems** (Fedora Silverblue, 
 
 See [docs/CASK_CREATION_GUIDE.md](docs/CASK_CREATION_GUIDE.md) for detailed desktop integration patterns.
 
+---
+
+## ⚠️ CRITICAL: Common Errors and How to Avoid Them
+
+**AI Agents: Read [docs/AGENT_BEST_PRACTICES.md](docs/AGENT_BEST_PRACTICES.md) BEFORE creating packages.**
+
+This document catalogs real errors that agents have made and how to prevent them:
+- ✓ Common validation errors (regex vs strings, line length, array ordering)
+- ✓ Platform-specific issues (Linux vs macOS vs Windows)
+- ✓ XDG compliance patterns
+- ✓ Pre-commit checklist (prevents 100% of CI failures)
+- ✓ Real-world examples from actual PR failures
+
+**Following the best practices guide prevents CI failures and speeds up development.**
+
+---
+
 ## Package Format Priority
 
 When packaging software, use this strict priority order:
@@ -292,6 +309,7 @@ Assisted-by: Claude 3.5 Sonnet via OpenCode
 
 All documentation is located in the `docs/` directory:
 
+- **[AGENT_BEST_PRACTICES.md](docs/AGENT_BEST_PRACTICES.md)** - ⚠️ READ THIS FIRST! Common errors and how to avoid them
 - **[AGENT_GUIDE.md](docs/AGENT_GUIDE.md)** - Comprehensive guide for agents creating packages
 - **[CASK_CREATION_GUIDE.md](docs/CASK_CREATION_GUIDE.md)** - Critical cask rules (READ THIS FIRST before creating casks!)
 - **[FORMULA_PATTERNS.md](docs/FORMULA_PATTERNS.md)** - Copy-paste templates for formulas
