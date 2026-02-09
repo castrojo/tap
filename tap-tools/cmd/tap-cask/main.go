@@ -211,6 +211,7 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 	caskData.AppName = repo
 	caskData.Description = repository.Description
 	caskData.Homepage = repository.Homepage
+	caskData.SourceURL = fmt.Sprintf("https://github.com/%s/%s", owner, repo)
 
 	// Set binary path from detection
 	if len(detectedBinaries) > 0 {

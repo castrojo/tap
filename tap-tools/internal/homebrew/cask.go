@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 	"text/template"
+
+	"github.com/castrojo/tap-tools/internal/generator"
 )
 
 // CaskData represents data for generating a Homebrew cask
@@ -32,6 +34,9 @@ type CaskData struct {
 
 	// Zap configuration
 	ZapTrash []string
+
+	// Generation metadata
+	SourceURL string // Repository URL for regeneration instructions
 }
 
 // caskTemplate is the template for generating Homebrew casks
@@ -139,6 +144,15 @@ func GenerateCask(data *CaskData) (string, error) {
 
 	// Execute template
 	var buf bytes.Buffer
+
+	// Write generation header first
+	if data.SourceURL != "" {
+		if err := generator.WriteHeader(&buf, "tap-cask", data.SourceURL); err != nil {
+			return "", fmt.Errorf("failed to write header: %w", err)
+		}
+	}
+
+	// Then write cask content
 	if err := tmpl.Execute(&buf, data); err != nil {
 		return "", fmt.Errorf("failed to execute template: %w", err)
 	}
