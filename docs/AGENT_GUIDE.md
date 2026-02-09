@@ -162,18 +162,33 @@ Still include calculated SHA256. Document in commit: "No upstream checksums avai
 1. Use the repository name as-is (e.g., `ripgrep` repo → `ripgrep` package)
 2. Convert to lowercase (e.g., `MyApp` → `myapp`)
 3. Replace underscores with hyphens (e.g., `my_tool` → `my-tool`)
-4. **Never override the repository name** - this ensures consistency with upstream
+4. **FOR CASKS ONLY:** Append `-linux` suffix (e.g., `sublime-text` → `sublime-text-linux`)
+5. **Never override the repository name** - this ensures consistency with upstream
+
+**Linux Cask Naming (Required):**
+- ALL casks MUST use `-linux` suffix
+- Prevents collision with official macOS casks in `homebrew-cask`
+- Makes Linux-only nature explicit
+- Examples: `sublime-text-linux`, `jetbrains-toolbox-linux`
+- The `new-cask.sh` script automatically appends `-linux` if not present
 
 **Why This Matters:**
 - Ensures package names match what users expect
 - Maintains consistency with upstream project naming
-- Prevents naming conflicts and confusion
+- Prevents naming conflicts with macOS casks
 - Makes updates predictable (Renovate can track by repo name)
 
 **Examples:**
-- Repository: `BurntSushi/ripgrep` → Package: `ripgrep`
-- Repository: `sharkdp/bat` → Package: `bat`
-- Repository: `user/My_Cool_App` → Package: `my-cool-app`
+
+**Formulas (no suffix):**
+- Repository: `BurntSushi/ripgrep` → Formula: `ripgrep`
+- Repository: `sharkdp/bat` → Formula: `bat`
+- Repository: `user/My_Cool_Tool` → Formula: `my-cool-tool`
+
+**Casks (with -linux suffix):**
+- Repository: `sublimehq/sublime_text` → Cask: `sublime-text-linux`
+- Repository: `JetBrains/toolbox-app` → Cask: `jetbrains-toolbox-linux`
+- Repository: `user/My_Cool_App` → Cask: `my-cool-app-linux`
 
 **Issue Template:**
 The issue template only requires:

@@ -40,6 +40,13 @@ fi
 CASK_NAME="$1"
 GITHUB_URL="$2"
 
+# Automatically append -linux suffix if not present
+if [[ ! "$CASK_NAME" =~ -linux$ ]]; then
+    warn "Appending '-linux' suffix (required for all casks in this Linux-only tap)"
+    CASK_NAME="${CASK_NAME}-linux"
+    info "New cask name: $CASK_NAME"
+fi
+
 # Validate cask name (lowercase, alphanumeric, hyphens)
 if ! [[ "$CASK_NAME" =~ ^[a-z0-9][a-z0-9-]*$ ]]; then
     error "Cask name must be lowercase, start with alphanumeric, and contain only alphanumeric characters and hyphens"

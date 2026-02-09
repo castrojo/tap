@@ -7,6 +7,34 @@
 - ✗ NEVER use macOS downloads (`.dmg`, `.pkg`, macOS `.zip`)
 - ✗ NEVER use Windows downloads (`.exe`, `.msi`)
 
+## Linux Cask Naming Convention
+
+**ALL casks in this tap MUST use the `-linux` suffix in their token.**
+
+**Correct:**
+```ruby
+cask "sublime-text-linux" do
+  # File: Casks/sublime-text-linux.rb
+end
+```
+
+**Wrong:**
+```ruby
+cask "sublime-text" do
+  # WRONG - Will collide with macOS casks
+end
+```
+
+**Why:**
+1. Prevents collision with official macOS casks in `homebrew-cask`
+2. Makes Linux-only nature immediately clear to users
+3. Follows established pattern from `ublue-os/tap` (e.g., `jetbrains-toolbox-linux`, `1password-gui-linux`)
+
+**Installation:**
+```bash
+brew install --cask castrojo/tap/app-name-linux
+```
+
 ## Package Format Priority
 
 Use this strict priority order when selecting download format:
