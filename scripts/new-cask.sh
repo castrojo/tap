@@ -149,47 +149,21 @@ CLASS_NAME=$(echo "$CASK_NAME" | sed -E 's/(^|-)([a-z])/\U\2/g')
 # Generate the cask
 info "Generating cask at $CASK_PATH..."
 
-# Build license line if available
-LICENSE_LINE=""
-if [ -n "$LICENSE" ] && [ "$LICENSE" != "null" ]; then
-    LICENSE_LINE="  license \"$LICENSE\""
-fi
-
-# Build version line
-VERSION_LINE="  version \"$VERSION\""
-
-# Build URL and SHA256 lines
-URL_LINE="  url \"$ASSET_URL\""
-SHA_LINE="  sha256 \"$SHA256\""
-
-# Generate binary stanza (proper Cask DSL)
-# Note: User will need to customize based on actual binary name in archive
-BINARY_STANZA="  binary \"$CASK_NAME\""
-
-# Generate test stanza
-TEST_STANZA="    # Test that the binary exists and is executable
-    assert_predicate bin/\"$CASK_NAME\", :exist?
-    assert_predicate bin/\"$CASK_NAME\", :executable?
-    
-    # Try running with --version
-    system bin/\"$CASK_NAME\", \"--version\""
+# Generate the cask following verified pattern from docs/CASK_CREATION_GUIDE.md
+# Correct stanza order: version, sha256, [blank], url, name, desc, homepage, [blank], binary
+# Note: NO test blocks (formulas only), NO depends_on :linux (invalid syntax)
 
 cat > "$CASK_PATH" << EOF
 cask "$CASK_NAME" do
-$VERSION_LINE
-$SHA_LINE
-$URL_LINE
-  
+  version "$VERSION"
+  sha256 "$SHA256"
+
+  url "$ASSET_URL"
   name "$CLASS_NAME"
   desc "$DESCRIPTION"
   homepage "$HOMEPAGE"
-$LICENSE_LINE
 
-$BINARY_STANZA
-
-  test do
-$TEST_STANZA
-  end
+  binary "$CASK_NAME"
 end
 EOF
 
@@ -209,13 +183,18 @@ echo -e "${BLUE}Repository:${NC}  $OWNER/$REPO"
 echo ""
 echo -e "${YELLOW}Next steps:${NC}"
 echo "  1. Review and customize the cask: $CASK_PATH"
-echo "  2. Adjust the binary name based on actual archive contents"
-echo "  3. Extract the archive to find the actual binary name"
-echo "  4. Test the cask: brew install --cask $CASK_PATH"
-echo "  5. Commit the cask: git add $CASK_PATH && git commit"
+echo "  2. Extract the archive to find the actual binary path:"
+echo "     tar -tzf $ASSET_NAME (for tar.gz) or unzip -l $ASSET_NAME (for zip)"
+echo "  3. Update the binary stanza with the correct path from archive"
+echo "     Example: binary \"app/bin/myapp\", target: \"myapp\""
+echo "  4. Read docs/CASK_CREATION_GUIDE.md for critical cask rules"
+echo "  5. Test the cask: brew install --cask --build-from-source $CASK_PATH"
+echo "  6. Validate: brew audit --cask --strict castrojo/tap/$CASK_NAME"
+echo "  7. Commit: git add $CASK_PATH && git commit -m \"feat(cask): add $CASK_NAME\""
 echo ""
-echo -e "${YELLOW}Note:${NC} The generated cask uses the Homebrew Cask DSL with a 'binary' stanza."
-echo "      You MUST customize the binary name to match the actual binary in the archive."
-echo "      Extract $ASSET_NAME to find the correct binary path."
-echo "      Example: binary \"path/to/actual-binary-name\""
+echo -e "${YELLOW}Important:${NC} The binary path is relative to the extracted archive root."
+echo "      The generated cask follows the verified template from docs/CASK_CREATION_GUIDE.md"
+echo "      - ✓ Correct stanza ordering (no blank lines within groups)"
+echo "      - ✓ No test blocks (casks don't support them)"
+echo "      - ✓ No depends_on :linux (invalid syntax for casks)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
