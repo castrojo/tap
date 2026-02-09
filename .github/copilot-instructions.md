@@ -136,8 +136,37 @@ homebrew-tap/
 ```
 
 **If validation fails, the --fix flag will auto-correct most issues. Re-stage the file and validate again until passing.**
-- ✓ Style check passed
-- Audit check may show path errors (expected - requires tapping first)
+
+### 2a. Complete Workflow: Generate → Validate → Commit → Push
+
+**The complete command sequence for agents:**
+
+```bash
+# Step 1: Generate package
+./tap-tools/tap-cask generate https://github.com/user/repo
+
+# Step 2: Validate (MANDATORY - auto-fixes issues)
+./tap-tools/tap-validate file Casks/package-name-linux.rb --fix
+
+# Step 3: Stage the file (re-stage if auto-fixed)
+git add Casks/package-name-linux.rb
+
+# Step 4: Commit with conventional format
+git commit -m "feat(cask): add package-name-linux
+
+Short description of the package.
+
+Assisted-by: <Model> via <Tool>"
+
+# Step 5: Push to remote
+git push
+```
+
+**Why this sequence works:**
+- `tap-validate --fix` auto-corrects style issues and modifies the file
+- You MUST `git add` again after validation (file was changed)
+- Pre-commit hook will re-validate automatically on commit
+- If pre-commit hook fails, fix and commit again (don't use --no-verify)
 
 ### 3. Testing Installation (Optional but recommended)
 

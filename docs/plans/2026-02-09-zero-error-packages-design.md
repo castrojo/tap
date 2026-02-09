@@ -148,30 +148,41 @@ Next steps:
 - User sees fix results immediately
 - No way to skip validation (it's built into the tool)
 
-#### 2.2 Create validate-and-commit.sh Helper Script
+#### 2.2 Document Complete Agent Workflow
 
-**Purpose:** Combine validation + commit in one command for AI agents.
+**Goal:** Make the validation → commit workflow so clear that agents don't need a helper script.
 
-**Location:** `scripts/validate-and-commit.sh`
+**Why no helper script:**
+- Pre-commit hook already validates automatically
+- tap-tools will auto-validate (after 2.1 is implemented)
+- Simple command sequence is clear: `validate → add → commit → push`
+- YAGNI principle - wait for proven need before adding another tool
 
-**Usage:**
+**Documented workflow (in Copilot instructions):**
 ```bash
-./scripts/validate-and-commit.sh Casks/app-linux.rb "feat(cask): add app-linux"
+# Complete sequence for agents
+./tap-tools/tap-cask generate https://github.com/user/repo
+./tap-tools/tap-validate file Casks/package-name-linux.rb --fix
+git add Casks/package-name-linux.rb
+git commit -m "feat(cask): add package-name-linux
+
+Description here.
+
+Assisted-by: <Model> via <Tool>"
+git push
 ```
 
-**Behavior:**
-1. Run `tap-validate file <path> --fix`
-2. If validation passes:
-   - `git add <path>`
-   - `git commit -m "<message>"`
-3. If validation fails:
-   - Report errors
-   - Exit with error code
+**Key documentation points:**
+1. Explain why `git add` is needed again after `--fix` (file was modified)
+2. Explain that pre-commit hook will re-validate automatically
+3. Show expected output at each step
+4. Emphasize that pre-commit hook blocks bad commits (safety net)
 
 **Benefits:**
-- Single command for agents to use (less chance of skipping validation)
-- Consistent workflow across manual and automated contributions
-- Clear success/failure feedback
+- No new tool to maintain
+- Simple, explicit commands agents can trust
+- Pre-commit hook provides safety net
+- If agents skip validation, hook catches it
 
 #### 2.3 Enhance Copilot Instructions
 
@@ -425,24 +436,20 @@ smoke_tests:
 **Change:** Same as tap-cask
 **Estimated effort:** 1 hour
 
-#### Task 3: Create validate-and-commit.sh
-**File:** `scripts/validate-and-commit.sh`
-**Change:** New script combining validation + commit
-**Estimated effort:** 30 minutes
-
-#### Task 4: Enhance copilot-instructions.md
+#### Task 3: Enhance copilot-instructions.md
 **File:** `.github/copilot-instructions.md`
-**Change:** Add mandatory checklist, update workflow section
+**Change:** Add complete workflow with explanation of why each step matters
 **Estimated effort:** 30 minutes
+**Status:** ✅ COMPLETED (2026-02-09)
 
-#### Task 5: Test Phase 2
+#### Task 4: Test Phase 2
 **Test cases:**
 - Generate new cask with tap-cask (should auto-validate)
 - Generate new formula with tap-formula (should auto-validate)
-- Use validate-and-commit.sh script (should validate + commit)
-- Verify Copilot reads updated instructions
+- Manual workflow: generate → validate → add → commit (verify pre-commit hook works)
+- Verify complete command sequence in documentation
 
-**Total effort for Phase 2:** ~3-4 hours
+**Total effort for Phase 2:** ~2.5 hours (down from 3-4 hours)
 
 ### Phase 3 (Future)
 
@@ -470,8 +477,8 @@ smoke_tests:
 ### Phase 2 Success Criteria
 - [ ] tap-cask auto-validates after generation
 - [ ] tap-formula auto-validates after generation
-- [ ] validate-and-commit.sh works for manual contributions
-- [ ] Copilot instructions include mandatory checklist
+- [x] Copilot instructions document complete workflow (validate → add → commit → push)
+- [x] Copilot instructions explain why git add is needed after --fix
 - [ ] Zero style failures in next 5 PRs
 
 ### Phase 3 Success Criteria
@@ -488,8 +495,12 @@ smoke_tests:
 ### Alternative: Require manual validation in PR template
 **Why rejected:** Easy to ignore checklists. Need enforcement, not suggestions.
 
-### Alternative: Block merges with branch protection rules
-**Why rejected:** Already have CI checks. Doesn't prevent bad commits, just bad merges.
+### Alternative: Create validate-and-commit.sh helper script
+**Why rejected:** 
+- Pre-commit hook already provides safety net
+- Simple command sequence (validate → add → commit) is clear enough
+- YAGNI - wait for proven need before adding another tool
+- If needed later, could add as Go tool (`tap-validate commit`) not bash script
 
 ## Open Questions
 
