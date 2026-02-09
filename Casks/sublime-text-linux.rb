@@ -11,4 +11,29 @@ cask "sublime-text-linux" do
   homepage "https://www.sublimetext.com/"
 
   binary "sublime_text/sublime_text", target: "subl"
+  # Install desktop file and icon for GUI launcher integration
+  artifact "sublime_text/sublime_text.desktop",
+           target: "#{Dir.home}/.local/share/applications/sublime-text.desktop"
+  artifact "sublime_text/Icon/128x128/sublime-text.png",
+           target: "#{Dir.home}/.local/share/icons/sublime-text.png"
+
+  preflight do
+    # Ensure directories exist
+    FileUtils.mkdir_p "#{Dir.home}/.local/share/applications"
+    FileUtils.mkdir_p "#{Dir.home}/.local/share/icons"
+
+    # Fix Exec path in desktop file to point to Homebrew binary
+    desktop_file = "#{staged_path}/sublime_text/sublime_text.desktop"
+    if File.exist?(desktop_file)
+      content = File.read(desktop_file)
+      # Replace hardcoded /opt path with Homebrew path
+      updated_content = content.gsub(%r{/opt/sublime_text/sublime_text}, "#{HOMEBREW_PREFIX}/bin/subl")
+      File.write(desktop_file, updated_content)
+    end
+  end
+
+  zap trash: [
+    "~/.cache/sublime-text",
+    "~/.config/sublime-text",
+  ]
 end
