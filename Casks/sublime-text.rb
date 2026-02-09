@@ -17,7 +17,7 @@ cask "sublime-text" do
     assert_predicate bin/"subl", :exist?
     assert_predicate bin/"subl", :executable?
 
-    # Test version output
+    # Test version output  
     system bin/"subl", "--version"
   end
 end
