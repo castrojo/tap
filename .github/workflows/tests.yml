@@ -39,10 +39,10 @@ jobs:
             name=$(basename "$file" .rb)
             if [[ "$file" == Casks/* ]]; then
               echo "Auditing cask $name (from $file)"
-              brew audit --cask --strict --online "$name"
+              brew audit --cask --strict --online "$file"
             elif [[ "$file" == Formula/* ]]; then
               echo "Auditing formula $name (from $file)"
-              brew audit --strict --online "$name"
+              brew audit --strict --online "$file"
             fi
           done
 
@@ -54,9 +54,9 @@ jobs:
             name=$(basename "$file" .rb)
             if [[ "$file" == Casks/* ]]; then
               echo "Checking style for cask $name (from $file)"
-              brew style --cask "$name"
+              brew style --cask "$file"
             elif [[ "$file" == Formula/* ]]; then
               echo "Checking style for formula $name (from $file)"
-              brew style "$name"
+              brew style "$file"
             fi
           done
