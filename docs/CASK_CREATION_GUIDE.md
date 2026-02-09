@@ -30,6 +30,23 @@ Follow the [XDG Base Directory specification](https://specifications.freedesktop
 | Cache | `$XDG_CACHE_HOME` | `~/.cache` | Non-essential cached data |
 | State | `$XDG_STATE_HOME` | `~/.local/state` | State data (logs, history) |
 
+**CRITICAL: Use XDG Environment Variables, Not Hardcoded Paths**
+
+Always respect XDG environment variables in cask code:
+```ruby
+# ✓ CORRECT - Respects user's XDG configuration
+target: "#{ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")}/applications/app.desktop"
+
+# ✗ WRONG - Hardcoded default path
+target: "#{Dir.home}/.local/share/applications/app.desktop"
+```
+
+**Why This Matters:**
+- Users may override XDG directories (e.g., `XDG_DATA_HOME=~/data`)
+- Full XDG Base Directory Spec compliance
+- Respects user preferences and system configurations
+- Some environments (e.g., NixOS, custom setups) use non-default XDG paths
+
 **Homebrew Compatibility:**
 Homebrew installs to `/home/linuxbrew/.linuxbrew/` which IS writable, but cask artifacts (desktop files, icons, etc.) MUST follow XDG paths in the user's home directory.
 
@@ -92,13 +109,14 @@ Desktop files enable GUI application launchers (GNOME, KDE, etc.) to find and di
 
 **Implementation:**
 ```ruby
-# Install desktop file
+# Install desktop file (using XDG environment variable)
 artifact "path/to/app.desktop",
-         target: "#{Dir.home}/.local/share/applications/app-name.desktop"
+         target: "#{ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")}/applications/app-name.desktop"
 
 # Fix paths in preflight
 preflight do
-  FileUtils.mkdir_p "#{Dir.home}/.local/share/applications"
+  xdg_data_home = ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")
+  FileUtils.mkdir_p "#{xdg_data_home}/applications"
   
   desktop_file = "#{staged_path}/path/to/app.desktop"
   if File.exist?(desktop_file)
@@ -106,7 +124,7 @@ preflight do
     # Fix Exec path to point to Homebrew binary
     updated_content = content.gsub(%r{/opt/app/binary}, "#{HOMEBREW_PREFIX}/bin/app-name")
     # Fix Icon path if needed
-    updated_content = updated_content.gsub(%r{/opt/app/icon}, "#{Dir.home}/.local/share/icons/app-name")
+    updated_content = updated_content.gsub(%r{/opt/app/icon}, "#{xdg_data_home}/icons/app-name")
     File.write(desktop_file, updated_content)
   end
 end
@@ -117,18 +135,19 @@ end
 
 **Implementation:**
 ```ruby
-# Simple icon installation
+# Simple icon installation (using XDG environment variable)
 artifact "path/to/icon.png",
-         target: "#{Dir.home}/.local/share/icons/app-name.png"
+         target: "#{ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")}/icons/app-name.png"
 
 # Or follow hicolor theme spec (preferred)
 artifact "path/to/128x128/icon.png",
-         target: "#{Dir.home}/.local/share/icons/hicolor/128x128/apps/app-name.png"
+         target: "#{ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")}/icons/hicolor/128x128/apps/app-name.png"
 
 preflight do
-  FileUtils.mkdir_p "#{Dir.home}/.local/share/icons"
+  xdg_data_home = ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")
+  FileUtils.mkdir_p "#{xdg_data_home}/icons"
   # Or for hicolor:
-  # FileUtils.mkdir_p "#{Dir.home}/.local/share/icons/hicolor/128x128/apps"
+  # FileUtils.mkdir_p "#{xdg_data_home}/icons/hicolor/128x128/apps"
 end
 ```
 
@@ -146,29 +165,31 @@ cask "myapp-linux" do
 
   binary "myapp/bin/myapp"
   
-  # Desktop integration
+  # Desktop integration (using XDG environment variables)
+  xdg_data_home = ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")
   artifact "myapp/myapp.desktop",
-           target: "#{Dir.home}/.local/share/applications/myapp.desktop"
+           target: "#{xdg_data_home}/applications/myapp.desktop"
   artifact "myapp/icon.png",
-           target: "#{Dir.home}/.local/share/icons/myapp.png"
+           target: "#{xdg_data_home}/icons/myapp.png"
 
   preflight do
-    FileUtils.mkdir_p "#{Dir.home}/.local/share/applications"
-    FileUtils.mkdir_p "#{Dir.home}/.local/share/icons"
+    xdg_data_home = ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")
+    FileUtils.mkdir_p "#{xdg_data_home}/applications"
+    FileUtils.mkdir_p "#{xdg_data_home}/icons"
 
     # Fix paths in desktop file
     desktop_file = "#{staged_path}/myapp/myapp.desktop"
     if File.exist?(desktop_file)
       content = File.read(desktop_file)
       updated_content = content.gsub(%r{/opt/myapp/myapp}, "#{HOMEBREW_PREFIX}/bin/myapp")
-      updated_content = updated_content.gsub(/Icon=.*/, "Icon=#{Dir.home}/.local/share/icons/myapp.png")
+      updated_content = updated_content.gsub(/Icon=.*/, "Icon=#{xdg_data_home}/icons/myapp.png")
       File.write(desktop_file, updated_content)
     end
   end
 
   zap trash: [
-    "~/.cache/myapp",
-    "~/.config/myapp",
+    "#{ENV.fetch("XDG_CACHE_HOME", "#{Dir.home}/.cache")}/myapp",
+    "#{ENV.fetch("XDG_CONFIG_HOME", "#{Dir.home}/.config")}/myapp",
   ]
 end
 ```

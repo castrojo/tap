@@ -65,12 +65,14 @@ func TestGenerateCaskWithDesktopFile(t *testing.T) {
 		t.Fatalf("GenerateCask() error = %v", err)
 	}
 
-	// Check for desktop integration
+	// Check for desktop integration with XDG environment variables
 	required := []string{
 		"preflight do",
 		"mkdir",
-		".local/share/applications",
-		".local/share/icons",
+		"xdg_data_home",
+		`ENV.fetch("XDG_DATA_HOME"`,
+		"applications",
+		"icons",
 		"desktop_file",
 		`artifact "app/app.desktop"`,
 		`artifact "app/icons/128x128/app.png"`,

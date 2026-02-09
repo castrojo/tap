@@ -74,6 +74,89 @@ Read [docs/CASK_CREATION_GUIDE.md](docs/CASK_CREATION_GUIDE.md) for detailed cas
 
 ---
 
+## Pull Request Policy (MANDATORY)
+
+**CRITICAL: All major features/epics MUST be developed in a pull request, NOT committed directly to main.**
+
+**Why:**
+- Enables Gemini Code Assist reviews for quality assurance
+- Provides code review feedback before merging
+- Creates discussion space for design decisions
+- Allows CI to validate changes before they land
+
+**When to Create a Pull Request:**
+- ✓ New features or functionality
+- ✓ Major refactoring or architectural changes
+- ✓ Multi-file changes spanning multiple components
+- ✓ Changes affecting critical workflows or patterns
+- ✓ Updates to Go CLI tools or core infrastructure
+- ✓ Documentation overhauls or new guides
+
+**When Direct Commits are Acceptable:**
+- Small bug fixes (single file, < 10 lines)
+- Typo corrections in documentation
+- Version bumps for existing packages
+- CI configuration tweaks (after testing)
+
+**Pull Request Workflow:**
+
+1. **Create Feature Branch:**
+   ```bash
+   git checkout -b feature/descriptive-name
+   # OR for fixes:
+   git checkout -b fix/issue-description
+   ```
+
+2. **Make Changes and Commit:**
+   ```bash
+   git add -A
+   git commit -m "feat(component): add new feature
+   
+   Detailed description of changes.
+   
+   Assisted-by: [Model] via [Tool]"
+   ```
+
+3. **Push and Create PR:**
+   ```bash
+   git push -u origin feature/descriptive-name
+   gh pr create --title "feat(component): add new feature" --body "$(cat <<'EOF'
+   ## Summary
+   - High-level overview of changes
+   - Why this change is needed
+   - What problems it solves
+   
+   ## Changes Made
+   - Specific file/component changes
+   - New functionality added
+   - Tests/documentation updated
+   
+   ## Testing
+   - How changes were validated
+   - Test commands run and their results
+   EOF
+   )"
+   ```
+
+4. **Wait for Gemini Code Review:**
+   - Gemini Code Assist will automatically review the PR
+   - Address any feedback or suggestions
+   - Make additional commits to the branch as needed
+
+5. **Merge After Approval:**
+   ```bash
+   gh pr merge --squash  # Or merge via GitHub UI
+   ```
+
+**Benefits of This Workflow:**
+- Gemini provides expert code review feedback
+- Catches issues before they reach main branch
+- Improves code quality and maintainability
+- Creates clear history of feature development
+- Enables better collaboration and knowledge sharing
+
+---
+
 ## Landing the Plane (Session Completion)
 
 **When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.

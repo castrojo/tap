@@ -56,8 +56,9 @@ const caskTemplate = `cask "{{ .Token }}" do
   preflight do
     {{- if .XDGDirs }}
     # Create XDG directories
+    xdg_data_home = ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")
     {{- range .XDGDirs }}
-    system_command "mkdir", args: ["-p", "{{ . }}"]
+    system_command "mkdir", args: ["-p", "#{xdg_data_home}/{{ . }}"]
     {{- end }}
     {{- end }}
     {{- if .HasDesktopFile }}
@@ -68,7 +69,7 @@ const caskTemplate = `cask "{{ .Token }}" do
       content = desktop_file.read
       content.gsub!(%r{Exec=.*}, "Exec=#{HOMEBREW_PREFIX}/bin/{{ .BinaryName }}")
       {{- if .HasIcon }}
-      content.gsub!(%r{Icon=.*}, "Icon=#{ENV.fetch("HOME")}/.local/share/icons/{{ .IconSource }}")
+      content.gsub!(%r{Icon=.*}, "Icon=#{xdg_data_home}/icons/{{ .IconSource }}")
       {{- end }}
       desktop_file.write(content)
     end
@@ -80,10 +81,10 @@ const caskTemplate = `cask "{{ .Token }}" do
   binary "{{ .BinaryPath }}", target: "{{ .BinaryName }}"
   {{- end }}
   {{- if .HasDesktopFile }}
-  artifact "{{ .DesktopFileSource }}", target: "#{ENV.fetch("HOME")}/.local/share/applications/{{ .DesktopFilePath }}"
+  artifact "{{ .DesktopFileSource }}", target: "#{ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")}/applications/{{ .DesktopFilePath }}"
   {{- end }}
   {{- if .HasIcon }}
-  artifact "{{ .IconSource }}", target: "#{ENV.fetch("HOME")}/.local/share/icons/{{ .IconPath }}"
+  artifact "{{ .IconSource }}", target: "#{ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")}/icons/{{ .IconPath }}"
   {{- end }}
 
   {{- if .ZapTrash }}
@@ -142,7 +143,7 @@ func (c *CaskData) SetDesktopFile(sourcePathInArchive, targetFilename string) {
 	c.HasDesktopFile = true
 	c.DesktopFileSource = sourcePathInArchive
 	c.DesktopFilePath = targetFilename
-	c.AddXDGDir("#{ENV.fetch(\"HOME\")}/.local/share/applications")
+	c.AddXDGDir("applications")
 }
 
 // SetIcon configures icon integration
@@ -150,7 +151,7 @@ func (c *CaskData) SetIcon(sourcePathInArchive, targetFilename string) {
 	c.HasIcon = true
 	c.IconSource = sourcePathInArchive
 	c.IconPath = targetFilename
-	c.AddXDGDir("#{ENV.fetch(\"HOME\")}/.local/share/icons")
+	c.AddXDGDir("icons")
 }
 
 // InferZapTrash infers common config/cache paths to add to zap trash
@@ -160,10 +161,11 @@ func (c *CaskData) InferZapTrash() {
 	appSlug = strings.ReplaceAll(appSlug, " ", "-")
 	appSlug = strings.ReplaceAll(appSlug, "_", "-")
 
+	// Use XDG environment variables for trash paths
 	commonPaths := []string{
-		fmt.Sprintf("~/.config/%s", appSlug),
-		fmt.Sprintf("~/.cache/%s", appSlug),
-		fmt.Sprintf("~/.local/share/%s", appSlug),
+		fmt.Sprintf(`#{ENV.fetch("XDG_CONFIG_HOME", "#{Dir.home}/.config")}/%s`, appSlug),
+		fmt.Sprintf(`#{ENV.fetch("XDG_CACHE_HOME", "#{Dir.home}/.cache")}/%s`, appSlug),
+		fmt.Sprintf(`#{ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")}/%s`, appSlug),
 	}
 
 	for _, path := range commonPaths {

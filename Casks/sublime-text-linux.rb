@@ -13,14 +13,15 @@ cask "sublime-text-linux" do
   binary "sublime_text/sublime_text", target: "subl"
   # Install desktop file and icon for GUI launcher integration
   artifact "sublime_text/sublime_text.desktop",
-           target: "#{Dir.home}/.local/share/applications/sublime-text.desktop"
+           target: "#{ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")}/applications/sublime-text.desktop"
   artifact "sublime_text/Icon/128x128/sublime-text.png",
-           target: "#{Dir.home}/.local/share/icons/sublime-text.png"
+           target: "#{ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")}/icons/sublime-text.png"
 
   preflight do
-    # Ensure directories exist
-    FileUtils.mkdir_p "#{Dir.home}/.local/share/applications"
-    FileUtils.mkdir_p "#{Dir.home}/.local/share/icons"
+    # Ensure directories exist using XDG environment variables
+    xdg_data_home = ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")
+    FileUtils.mkdir_p "#{xdg_data_home}/applications"
+    FileUtils.mkdir_p "#{xdg_data_home}/icons"
 
     # Fix Exec path in desktop file to point to Homebrew binary
     desktop_file = "#{staged_path}/sublime_text/sublime_text.desktop"
@@ -33,7 +34,7 @@ cask "sublime-text-linux" do
   end
 
   zap trash: [
-    "~/.cache/sublime-text",
-    "~/.config/sublime-text",
+    "#{ENV.fetch("XDG_CACHE_HOME", "#{Dir.home}/.cache")}/sublime-text",
+    "#{ENV.fetch("XDG_CONFIG_HOME", "#{Dir.home}/.config")}/sublime-text",
   ]
 end

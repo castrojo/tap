@@ -64,11 +64,20 @@ Systems like Fedora Silverblue and Universal Blue have immutable filesystems. Yo
 | Type | Location | Purpose |
 |------|----------|---------|
 | Binaries | `/home/linuxbrew/.linuxbrew/bin/` | Homebrew binaries (writable) |
-| Desktop Files | `~/.local/share/applications/` | GUI launcher integration |
-| Icons | `~/.local/share/icons/` | Application icons |
-| Config | `~/.config/app-name/` | Configuration files |
-| Cache | `~/.cache/app-name/` | Cache data |
-| Data | `~/.local/share/app-name/` | Application data |
+| Desktop Files | `$XDG_DATA_HOME/applications/` (default: `~/.local/share/applications/`) | GUI launcher integration |
+| Icons | `$XDG_DATA_HOME/icons/` (default: `~/.local/share/icons/`) | Application icons |
+| Config | `$XDG_CONFIG_HOME/app-name/` (default: `~/.config/app-name/`) | Configuration files |
+| Cache | `$XDG_CACHE_HOME/app-name/` (default: `~/.cache/app-name/`) | Cache data |
+| Data | `$XDG_DATA_HOME/app-name/` (default: `~/.local/share/app-name/`) | Application data |
+
+**CRITICAL: Always use XDG environment variables, not hardcoded paths:**
+```ruby
+# ✓ CORRECT - Respects user's XDG configuration
+target: "#{ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")}/applications/app.desktop"
+
+# ✗ WRONG - Hardcoded path
+target: "#{Dir.home}/.local/share/applications/app.desktop"
+```
 
 **NEVER attempt to install to:**
 - ❌ `/usr/share/applications/` - Read-only
@@ -106,17 +115,19 @@ cask "app-name-linux" do
   binary "app-name/bin/app-name"
   
   # Desktop file installation (XDG user directory)
+  xdg_data_home = ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")
   artifact "app-name/app-name.desktop",
-           target: "#{Dir.home}/.local/share/applications/app-name.desktop"
+           target: "#{xdg_data_home}/applications/app-name.desktop"
   
   # Icon installation (XDG user directory)
   artifact "app-name/icon.png",
-           target: "#{Dir.home}/.local/share/icons/app-name.png"
+           target: "#{xdg_data_home}/icons/app-name.png"
   
   preflight do
-    # Create required directories
-    FileUtils.mkdir_p "#{Dir.home}/.local/share/applications"
-    FileUtils.mkdir_p "#{Dir.home}/.local/share/icons"
+    # Create required directories using XDG environment variables
+    xdg_data_home = ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")
+    FileUtils.mkdir_p "#{xdg_data_home}/applications"
+    FileUtils.mkdir_p "#{xdg_data_home}/icons"
     
     # Fix paths in desktop file
     desktop_file = "#{staged_path}/app-name/app-name.desktop"
@@ -128,7 +139,7 @@ cask "app-name-linux" do
       updated_content = updated_content.gsub(%r{/usr/bin/app-name}, "#{HOMEBREW_PREFIX}/bin/app-name")
       
       # Fix Icon path to point to user icons directory
-      updated_content = updated_content.gsub(/Icon=.*/, "Icon=#{Dir.home}/.local/share/icons/app-name.png")
+      updated_content = updated_content.gsub(/Icon=.*/, "Icon=#{xdg_data_home}/icons/app-name.png")
       
       File.write(desktop_file, updated_content)
     end
@@ -136,9 +147,9 @@ cask "app-name-linux" do
   
   # Clean up user data on zap
   zap trash: [
-    "~/.cache/app-name",
-    "~/.config/app-name",
-    "~/.local/share/app-name",
+    "#{ENV.fetch("XDG_CACHE_HOME", "#{Dir.home}/.cache")}/app-name",
+    "#{ENV.fetch("XDG_CONFIG_HOME", "#{Dir.home}/.config")}/app-name",
+    "#{ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")}/app-name",
   ]
 end
 ```
@@ -157,14 +168,16 @@ cask "sublime-text-linux" do
 
   binary "sublime_text/sublime_text", target: "subl"
   
+  # Use XDG environment variables for desktop integration
   artifact "sublime_text/sublime_text.desktop",
-           target: "#{Dir.home}/.local/share/applications/sublime-text.desktop"
+           target: "#{ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")}/applications/sublime-text.desktop"
   artifact "sublime_text/Icon/128x128/sublime-text.png",
-           target: "#{Dir.home}/.local/share/icons/sublime-text.png"
+           target: "#{ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")}/icons/sublime-text.png"
 
   preflight do
-    FileUtils.mkdir_p "#{Dir.home}/.local/share/applications"
-    FileUtils.mkdir_p "#{Dir.home}/.local/share/icons"
+    xdg_data_home = ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")
+    FileUtils.mkdir_p "#{xdg_data_home}/applications"
+    FileUtils.mkdir_p "#{xdg_data_home}/icons"
 
     desktop_file = "#{staged_path}/sublime_text/sublime_text.desktop"
     if File.exist?(desktop_file)
@@ -175,8 +188,8 @@ cask "sublime-text-linux" do
   end
 
   zap trash: [
-    "~/.cache/sublime-text",
-    "~/.config/sublime-text",
+    "#{ENV.fetch("XDG_CACHE_HOME", "#{Dir.home}/.cache")}/sublime-text",
+    "#{ENV.fetch("XDG_CONFIG_HOME", "#{Dir.home}/.config")}/sublime-text",
   ]
 end
 ```
