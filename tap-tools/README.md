@@ -22,12 +22,20 @@ Go CLI tools to replace bash scripts for generating Homebrew formulas and casks 
 - Automatic `-linux` suffix enforcement
 - Unit tests with >90% coverage for core packages
 
+**Phase 3: Formula Generator** ✅ COMPLETE
+- `tap-formula` CLI tool fully implemented
+- Build system detection (Go, Rust, CMake, Meson, Makefile)
+- Automatic install block generation
+- Support for pre-built binaries and source builds
+- Formula template generation
+- Unit tests with >89% coverage for buildsystem and formula packages
+
 ## Project Structure
 
 ```
 tap-tools/
 ├── cmd/                    # CLI applications
-│   ├── tap-formula/       # Formula generator (planned)
+│   ├── tap-formula/       # ✅ Formula generator
 │   ├── tap-cask/          # ✅ Cask generator
 │   ├── tap-issue/         # Issue processor (planned)
 │   └── tap-validate/      # Validator (planned)
@@ -35,9 +43,9 @@ tap-tools/
 │   ├── github/            # ✅ GitHub API client
 │   ├── checksum/          # ✅ SHA256 verification
 │   ├── platform/          # ✅ Linux format detection
-│   ├── homebrew/          # ✅ Cask generation
+│   ├── homebrew/          # ✅ Formula & Cask generation
 │   ├── desktop/           # ✅ Desktop integration
-│   └── buildsystem/       # Build system detection (planned)
+│   └── buildsystem/       # ✅ Build system detection
 ├── pkg/
 │   └── templates/         # Embedded templates (planned)
 ├── go.mod
@@ -87,14 +95,59 @@ tap-tools/
 - Fix paths in .desktop files for XDG directories
 - Generate preflight blocks for directory creation
 
-#### Homebrew Cask Generation (`internal/homebrew/`)
+#### Homebrew Package Generation (`internal/homebrew/`)
 - Generate cask templates from release data
-- Automatic `-linux` suffix enforcement
+- Generate formula templates with build system detection
+- Automatic `-linux` suffix enforcement for casks
 - XDG Base Directory Spec compliance
 - Binary extraction from tarballs and .deb files
 - Zap trash for config/cache cleanup
 
+### Phase 3: Formula Generator
+
+#### Build System Detection (`internal/buildsystem/`)
+- Detect build systems from repository files
+- Supported build systems:
+  - Go (go.mod, go.sum)
+  - Rust (Cargo.toml, Cargo.lock)
+  - CMake (CMakeLists.txt)
+  - Meson (meson.build)
+  - Makefile (Makefile, makefile, GNUmakefile)
+- Generate appropriate install blocks with Homebrew helpers
+- Automatic dependency detection
+- Test block generation
+
+#### `tap-formula` CLI (`cmd/tap-formula/`)
+- Generate formulas from GitHub repository URLs
+- Automatic build system detection and install block generation
+- Support for pre-built binaries and source builds
+- Pretty colored terminal output
+- Flags:
+  - `--from-source`: Force building from source
+  - `--name`: Override package name
+  - `--binary`: Specify binary name
+  - `--output`: Custom output path
+
 **Usage Example:**
+```bash
+./tap-formula generate https://github.com/BurntSushi/ripgrep
+
+# Output:
+# 🔍 Parsing repository URL...
+# ✓ Repository: BurntSushi/ripgrep
+# 🔍 Fetching repository metadata...
+# ✓ Found: Recursively search directories for a regex pattern
+# 🔍 Finding latest release...
+# ✓ Version: 14.0.0
+# 🔍 Analyzing release assets...
+# ✓ Selected: ripgrep-14.0.0-x86_64-unknown-linux-musl.tar.gz
+# ⬇️  Downloading asset...
+# 🔐 Calculating SHA256...
+# 📝 Generating formula...
+# ✅ Created: Formula/ripgrep.rb
+```
+
+**Cask Example:**
 ```bash
 ./tap-cask generate sublime-text https://github.com/sublimehq/sublime_text
 
@@ -127,10 +180,11 @@ go tool cover -html=coverage.out
 ```
 
 **Current Coverage:** 
-- Overall: ~70%
+- Overall: ~80%
 - `internal/platform`: 95.7%
 - `internal/desktop`: 93.2%
-- `internal/homebrew`: 91.7%
+- `internal/homebrew`: 92.3%
+- `internal/buildsystem`: 89.6%
 - `internal/checksum`: 35.2%
 - `internal/github`: 30.9%
 
@@ -142,18 +196,15 @@ go tool cover -html=coverage.out
 - `github.com/hashicorp/go-version` - Version parsing (ready for use)
 - `golang.org/x/oauth2` - OAuth support
 
-## Next Steps (Phase 3)
+## Next Steps (Phase 4)
 
 See [../docs/GO_MIGRATION_PLAN.md](../docs/GO_MIGRATION_PLAN.md) for full plan.
 
-**Phase 3: Formula Generator** (in progress)
-- [ ] Implement build system detection package (`internal/buildsystem/`)
-  - [ ] Go build system
-  - [ ] Rust build system
-  - [ ] CMake build system
-  - [ ] Meson build system
-- [ ] Implement formula generation (`internal/homebrew/formula.go`)
-- [ ] Implement `tap-formula` CLI command
+**Phase 4: Issue Processor** (planned)
+- [ ] Implement issue parsing from GitHub
+- [ ] Implement workflow orchestration (formula vs cask detection)
+- [ ] Implement `tap-issue` CLI command
+- [ ] Add PR creation integration
 - [ ] Write integration tests
 
 ## Development
@@ -163,10 +214,14 @@ See [../docs/GO_MIGRATION_PLAN.md](../docs/GO_MIGRATION_PLAN.md) for full plan.
 go build ./cmd/...
 
 # Run tap-cask
-./tap-cask generate sublime-text https://github.com/sublimehq/sublime_text
+./tap-cask generate https://github.com/user/app
+
+# Run tap-formula
+./tap-formula generate https://github.com/user/tool
 
 # Or run directly
 go run ./cmd/tap-cask generate app-name https://github.com/user/repo
+go run ./cmd/tap-formula generate tool-name https://github.com/user/repo
 
 # Format code
 go fmt ./...
