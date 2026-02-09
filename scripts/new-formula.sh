@@ -65,13 +65,18 @@ if ! gh auth status &> /dev/null; then
     error "GitHub CLI is not authenticated. Run: gh auth login"
 fi
 
+# Check if jq is available
+if ! command -v jq &> /dev/null; then
+    error "jq is not installed. Install it with: brew install jq"
+fi
+
 # Fetch repository metadata
 info "Fetching repository metadata..."
 REPO_DATA=$(gh api "repos/$OWNER/$REPO" 2>/dev/null) || error "Failed to fetch repository metadata. Check if repository exists and is accessible."
 
 DESCRIPTION=$(echo "$REPO_DATA" | jq -r '.description // "A command-line tool"')
 HOMEPAGE=$(echo "$REPO_DATA" | jq -r '.html_url')
-LICENSE=$(echo "$REPO_DATA" | jq -r '.license.spdx_id // "Unknown"')
+LICENSE=$(echo "$REPO_DATA" | jq -r '.license.spdx_id // empty')
 
 success "Repository: $OWNER/$REPO"
 info "Description: $DESCRIPTION"
@@ -130,13 +135,19 @@ CLASS_NAME=$(echo "$PACKAGE_NAME" | sed -E 's/(^|-)([a-z])/\U\2/g')
 # Generate the formula
 info "Generating formula at $FORMULA_PATH..."
 
+# Build license line if available
+LICENSE_LINE=""
+if [ -n "$LICENSE" ] && [ "$LICENSE" != "null" ]; then
+    LICENSE_LINE="  license \"$LICENSE\""
+fi
+
 cat > "$FORMULA_PATH" << EOF
 class $CLASS_NAME < Formula
   desc "$DESCRIPTION"
   homepage "$HOMEPAGE"
   url "$TARBALL_URL"
   sha256 "$SHA256"
-  license "$LICENSE"
+$LICENSE_LINE
 
   def install
     bin.install "$PACKAGE_NAME"
@@ -148,11 +159,13 @@ class $CLASS_NAME < Formula
     assert_predicate bin/"$PACKAGE_NAME", :executable?
 
     # Try running with --version or --help
-    output = shell_output("#{bin}/$PACKAGE_NAME --version 2>&1", 0)
-    assert_match /$VERSION/, output
-  rescue
-    # If --version doesn't work, try --help
-    system "#{bin}/$PACKAGE_NAME", "--help"
+    begin
+      output = shell_output("#{bin}/$PACKAGE_NAME --version 2>&1", 0)
+      assert_match "$VERSION", output
+    rescue
+      # If --version doesn't work, try --help
+      system "#{bin}/$PACKAGE_NAME", "--help"
+    end
   end
 end
 EOF
