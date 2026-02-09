@@ -1,0 +1,115 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  
+  // Run every 3 hours to keep dependencies fresh
+  "schedule": ["every 3 hours"],
+  
+  // Use conventional commits for semantic versioning
+  "semanticCommits": "enabled",
+  "commitMessagePrefix": "chore(deps):",
+  
+  // Enable platform automerge
+  "platformAutomerge": true,
+  
+  // Group related updates together
+  "groupName": "all dependencies",
+  "groupSlug": "all",
+  
+  // Configure regex managers for Homebrew formulas and casks
+  "regexManagers": [
+    {
+      // Match Homebrew Formula files
+      "fileMatch": ["^Formula/.+\\.rb$"],
+      "matchStrings": [
+        // Match version and sha256 in formulas
+        "\\s+version\\s+[\"'](?<currentValue>[^\"']+)[\"']",
+        "\\s+sha256\\s+[\"'](?<currentDigest>[^\"']+)[\"']"
+      ],
+      "depNameTemplate": "{{packageFile}}",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)$"
+    },
+    {
+      // Match Homebrew Cask files
+      "fileMatch": ["^Casks/.+\\.rb$"],
+      "matchStrings": [
+        // Match version in casks
+        "\\s+version\\s+[\"'](?<currentValue>[^\"']+)[\"']",
+        // Match sha256 in casks
+        "\\s+sha256\\s+[\"'](?<currentDigest>[^\"']+)[\"']"
+      ],
+      "depNameTemplate": "{{packageFile}}",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)$"
+    }
+  ],
+  
+  // Package rules for different update types
+  "packageRules": [
+    {
+      // Auto-merge patch releases after 3 hours
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash",
+      "minimumReleaseAge": "3 hours",
+      "schedule": ["at any time"]
+    },
+    {
+      // Auto-merge minor releases after 1 day
+      "matchUpdateTypes": ["minor"],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash",
+      "minimumReleaseAge": "1 day",
+      "schedule": ["at any time"]
+    },
+    {
+      // Major releases require manual review
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "schedule": ["at any time"],
+      "labels": ["major-update", "needs-review"]
+    },
+    {
+      // Group all Homebrew formula updates
+      "matchFileNames": ["Formula/**"],
+      "groupName": "Homebrew formulas",
+      "groupSlug": "homebrew-formulas",
+      "commitMessageTopic": "Homebrew formulas"
+    },
+    {
+      // Group all Homebrew cask updates
+      "matchFileNames": ["Casks/**"],
+      "groupName": "Homebrew casks",
+      "groupSlug": "homebrew-casks",
+      "commitMessageTopic": "Homebrew casks"
+    }
+  ],
+  
+  // Pull request settings
+  "prConcurrentLimit": 5,
+  "prCreation": "immediate",
+  "prHourlyLimit": 2,
+  
+  // Rebase stale PRs
+  "rebaseWhen": "behind-base-branch",
+  
+  // Add labels to PRs
+  "labels": ["dependencies", "renovate"],
+  
+  // PR title format
+  "prTitle": "{{commitMessagePrefix}} {{commitMessageAction}} {{commitMessageTopic}} {{commitMessageExtra}} {{commitMessageSuffix}}",
+  
+  // Ignore certain patterns
+  "ignorePaths": [
+    "**/node_modules/**",
+    "**/vendor/**"
+  ],
+  
+  // Enable vulnerability alerts
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"]
+  }
+}
