@@ -20,6 +20,12 @@
     "enabled": true
   },
   
+  // Enable GitHub Actions updates with SHA pinning (security policy)
+  "github-actions": {
+    "enabled": true,
+    "pinDigests": true
+  },
+  
   // Use regex manager only for casks (built-in manager doesn't support Casks/)
   "regexManagers": [
     {
@@ -99,6 +105,30 @@
       "groupName": "Homebrew casks",
       "groupSlug": "homebrew-casks",
       "commitMessageTopic": "Homebrew casks"
+    },
+    {
+      // Auto-merge GitHub Actions patch/minor updates (security policy)
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash",
+      "minimumReleaseAge": "3 days",
+      "schedule": ["at any time"]
+    },
+    {
+      // Manual review for major GitHub Actions updates (may have breaking changes)
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["major-update", "needs-review"]
+    },
+    {
+      // Group all GitHub Actions updates together
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions",
+      "groupSlug": "github-actions",
+      "commitMessageTopic": "GitHub Actions"
     }
   ],
   

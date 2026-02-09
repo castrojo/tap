@@ -34,6 +34,7 @@ This directory contains all documentation for the homebrew-tap project, organize
 | Document | Purpose | Status |
 |----------|---------|--------|
 | [RENOVATE_GUIDE.md](RENOVATE_GUIDE.md) | Automated version updates | ✅ Complete |
+| [GITHUB_ACTIONS_POLICY.md](GITHUB_ACTIONS_POLICY.md) | SHA pinning and security policy | 📋 Ready to Implement |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Error resolution guide | ✅ Complete |
 | [WORKFLOW_IMPROVEMENTS.md](WORKFLOW_IMPROVEMENTS.md) | Lessons from PR #11 | ✅ Complete |
 

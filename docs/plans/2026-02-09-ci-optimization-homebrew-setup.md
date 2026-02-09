@@ -362,17 +362,24 @@ git push
 
 ### Approach 2 is Superior If:
 
-1. **Time savings ≥ 20 seconds** per workflow run
+1. **Time savings ≥ 30 seconds** per workflow run (REQUIRED THRESHOLD)
 2. **No functionality regression** - all tests pass identically
 3. **No warnings or errors** introduced
 4. **Maintainable** - simple and clear code
 
 ### Approach 1 Remains Better If:
 
-1. **Time savings < 10 seconds** - not worth maintenance burden
+1. **Time savings < 30 seconds** - not worth maintenance burden (DECIDED)
 2. **Functionality breaks** - audit/style commands fail
 3. **Warnings appear** - about missing taps or outdated versions
 4. **Complexity increases** - requires workarounds or fixes
+
+### Testing Environment (DECIDED):
+
+- **Only test on ubuntu-24.04** (not 22.04)
+- Simpler testing matrix
+- Matches latest LTS Ubuntu
+- Forward-looking (will be standard soon)
 
 ## Risk Assessment
 
@@ -407,14 +414,19 @@ git push
 
 ## Decision Framework
 
+**Decision criteria (UPDATED):**
+- Minimum 30-second savings required to adopt Approach 2
+- Test only on ubuntu-24.04 (forward-looking, simpler)
+- No need to test on real PRs (experiment branch sufficient)
+
 ```
 ┌─────────────────────────────────────────────────┐
-│ Run Experiments (Step 1-5)                      │
+│ Run Experiments on ubuntu-24.04 (Step 1-5)      │
 └─────────────────┬───────────────────────────────┘
                   │
                   ▼
 ┌─────────────────────────────────────────────────┐
-│ Time savings ≥ 20s AND no regressions?          │
+│ Time savings ≥ 30s AND no regressions?          │
 └─────────────────┬───────────────────────────────┘
                   │
          ┌────────┴────────┐
@@ -430,11 +442,17 @@ git push
          │                 │
          ▼                 ▼
 ┌────────────────┐  ┌─────────────────┐
-│ Document in    │  │ Document why    │
-│ tests.yml and  │  │ full setup is   │
-│ this plan      │  │ necessary       │
+│ Ship to main   │  │ Document why    │
+│ immediately    │  │ optimization    │
+│ (aggressive)   │  │ not worth it    │
 └────────────────┘  └─────────────────┘
 ```
+
+**Shipping strategy (DECIDED):**
+- ✅ Aggressive: Ship fast if tests pass
+- ✅ Document thoroughly in commit message
+- ✅ No PR required if savings ≥ 30s and no regressions
+- ⚠️ Can add more testing later if issues arise
 
 ## Phase 3 Implications
 

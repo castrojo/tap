@@ -121,32 +121,79 @@ Every path to creating a package must include validation:
 
 **Goal:** Auto-validate generated packages before returning control to user.
 
-**Changes needed:**
-- After writing `.rb` file, run `tap-validate file <path> --fix`
-- Report validation results to user
-- Exit with error if validation fails (shouldn't happen with --fix)
+**Requirements (DECIDED):**
+- ✅ **Exit with error if validation fails** - Tools should only be used in CI
+- ✅ **Validation is MANDATORY** - No `--skip-validation` flag
+- ✅ **Auto-rewrite files** - Apply fixes automatically, re-stage if needed
+- ✅ **Verbose output** - Show all validation steps and results
 
-**Example output:**
+**Changes needed:**
+1. After writing `.rb` file, run `tap-validate file <path> --fix`
+2. Read the fixed file back and overwrite the original
+3. Show verbose validation output (all steps, fixes applied)
+4. Exit with error code 1 if validation fails
+5. Exit with code 0 only if file is valid and ready to commit
+
+**Example output (verbose):**
 ```bash
 $ ./tap-tools/tap-cask generate rancher-desktop https://github.com/rancher-sandbox/rancher-desktop
 
 ✓ Downloaded release metadata from GitHub
 ✓ Selected asset: rancher-desktop-1.14.0-linux-x64.tar.gz (tarball)
-✓ Downloaded and verified SHA256
+✓ Downloaded SHA256: abc123...
+✓ Verified upstream checksum matches
 ✓ Generated Casks/rancher-desktop-linux.rb
-✓ Running validation...
-  ⚠ Fixed 2 style issues (line length, array ordering)
-✓ Package ready to commit
+
+🔍 Running mandatory validation...
+  → Checking RuboCop style rules...
+  ⚠ Fixed: Line 5 exceeds max length (truncated description)
+  ⚠ Fixed: Array elements not in alphabetical order (sorted)
+  → Checking XDG environment variable usage...
+  ✓ All paths use XDG_DATA_HOME correctly
+  → Re-writing Casks/rancher-desktop-linux.rb with fixes...
+  ✓ File updated with auto-fixes
+
+✅ Validation passed - package ready to commit
 
 Next steps:
   git add Casks/rancher-desktop-linux.rb
   git commit -m "feat(cask): add rancher-desktop-linux"
+  git push
 ```
+
+**Error output (validation fails):**
+```bash
+$ ./tap-tools/tap-cask generate broken-app https://github.com/user/broken
+
+✓ Downloaded release metadata from GitHub
+✓ Selected asset: broken-app-linux.tar.gz
+✓ Downloaded SHA256: def456...
+✓ Generated Casks/broken-app-linux.rb
+
+🔍 Running mandatory validation...
+  → Checking RuboCop style rules...
+  ✗ Error: Invalid Ruby syntax on line 12
+  ✗ Error: Missing required stanza 'homepage'
+
+❌ Validation failed - cannot proceed
+
+Please fix the errors manually and run:
+  ./tap-tools/tap-validate file Casks/broken-app-linux.rb --fix
+
+Exit code: 1
+```
+
+**Implementation notes:**
+- Use `internal/validator` package (already exists in tap-validate)
+- Call validator functions directly rather than shelling out
+- Capture validation output and display verbosely
+- Return early with error if validation cannot be fixed automatically
 
 **Benefits:**
 - Validation happens automatically at generation time
-- User sees fix results immediately
-- No way to skip validation (it's built into the tool)
+- User sees detailed fix results
+- No way to skip validation (mandatory for CI use)
+- Files are always ready to commit after successful generation
 
 #### 2.2 Document Complete Agent Workflow
 
@@ -233,6 +280,46 @@ git push
 ### Goal
 Validate that packages actually work, not just that they pass style checks.
 
+### Requirements (DECIDED)
+
+**Trigger:** TBD - need to test Phase 2 first and determine appropriate threshold
+- Likely: After 5-10 PRs pass with zero style failures
+- Monitor: Time between Phase 2 completion and Phase 3 start
+
+**Test Strategy:**
+- ✅ **Tests are BLOCKING** - Prevent merge on failure
+- ✅ **Retry strategy required** - Limit transient failures (network, upstream)
+- ✅ **ubuntu-24.04 sufficient** - No need for Fedora Silverblue/Universal Blue testing
+- ⚠️ **Need retry policy** - See below for implementation
+
+### Retry Strategy (NEW)
+
+To minimize false failures from transient issues:
+
+**Retry Policy:**
+1. **Network failures:** Retry up to 3 times with exponential backoff (2s, 4s, 8s)
+2. **Download failures:** Retry up to 2 times
+3. **Installation failures:** No retry (indicates real problem)
+4. **Test execution failures:** Retry once (may be timing issue)
+
+**Implementation:**
+```yaml
+- name: Test installation with retry
+  uses: nick-invision/retry@v2
+  with:
+    timeout_minutes: 10
+    max_attempts: 3
+    retry_wait_seconds: 5
+    retry_on: error
+    command: |
+      brew install --cask "$PACKAGE" || brew install "$PACKAGE"
+```
+
+**Acceptable failure rate:**
+- ≤ 2% false positive rate (network/upstream issues)
+- If failure rate > 2%, investigate retry strategy
+- Track failures in GitHub Actions logs for analysis
+
 ### Architecture
 
 #### 3.1 CI Job: test-installation
@@ -243,9 +330,8 @@ Validate that packages actually work, not just that they pass style checks.
 - On PR to changed Formula/Cask files
 - On demand via workflow_dispatch
 
-**Matrix strategy:**
-- Ubuntu 22.04 (baseline)
-- Fedora 40 (rpm-based, test with universal-blue target)
+**Matrix strategy (SIMPLIFIED):**
+- ubuntu-24.04 only (decided)
 
 **Job steps:**
 
@@ -260,50 +346,50 @@ on:
 
 jobs:
   test-install:
-    strategy:
-      matrix:
-        os: [ubuntu-22.04]
-        # Future: Add fedora-40
-    
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-24.04
     
     steps:
       - uses: actions/checkout@v4
       
-      - name: Install Homebrew
-        run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          echo "/home/linuxbrew/.linuxbrew/bin" >> $GITHUB_PATH
+      - name: Add Homebrew to PATH
+        run: echo "/home/linuxbrew/.linuxbrew/bin" >> $GITHUB_PATH
       
       - name: Tap this repository
-        run: brew tap castrojo/tap "${{ github.workspace }}"
+        run: |
+          mkdir -p $(brew --repository)/Library/Taps/castrojo
+          ln -s $GITHUB_WORKSPACE $(brew --repository)/Library/Taps/castrojo/homebrew-tap
       
       - name: Detect changed packages
         id: changed
         run: |
-          # Get changed .rb files
           CHANGED_FILES=$(git diff --name-only origin/main...HEAD | grep -E '\.(rb)$' || true)
           echo "files=$CHANGED_FILES" >> $GITHUB_OUTPUT
       
-      - name: Test installation
-        run: |
-          for file in ${{ steps.changed.outputs.files }}; do
-            if [[ "$file" == Casks/* ]]; then
-              PACKAGE=$(basename "$file" .rb)
-              echo "Testing cask: $PACKAGE"
-              brew install --cask "$PACKAGE"
-              
-              # Smoke tests for casks
-              ./scripts/test-cask.sh "$PACKAGE"
-            elif [[ "$file" == Formula/* ]]; then
-              PACKAGE=$(basename "$file" .rb)
-              echo "Testing formula: $PACKAGE"
-              brew install "$PACKAGE"
-              
-              # Smoke tests for formulas
-              ./scripts/test-formula.sh "$PACKAGE"
-            fi
-          done
+      - name: Test installation with retry
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 5
+          retry_on: error
+          command: |
+            for file in ${{ steps.changed.outputs.files }}; do
+              if [[ "$file" == Casks/* ]]; then
+                PACKAGE=$(basename "$file" .rb)
+                echo "Testing cask: $PACKAGE"
+                brew install --cask "castrojo/tap/$PACKAGE"
+                
+                # Smoke tests for casks
+                ./scripts/test-cask.sh "$PACKAGE"
+              elif [[ "$file" == Formula/* ]]; then
+                PACKAGE=$(basename "$file" .rb)
+                echo "Testing formula: $PACKAGE"
+                brew install "castrojo/tap/$PACKAGE"
+                
+                # Smoke tests for formulas
+                ./scripts/test-formula.sh "$PACKAGE"
+              fi
+            done
 ```
 
 #### 3.2 Smoke Test Scripts

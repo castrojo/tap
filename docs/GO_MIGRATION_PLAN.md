@@ -603,23 +603,153 @@ exec tap-cask generate "$@"
 - [ ] Performance optimization
 - [ ] Create release binaries
 
+## Migration Status (UPDATED 2026-02-09)
+
+### ✅ Completed Phases
+
+All core Go tools are **complete and functional**:
+
+- ✅ **tap-cask** - Generate casks from GitHub releases (5.5x faster than bash)
+- ✅ **tap-formula** - Generate formulas from GitHub releases (4.2x faster than bash)
+- ✅ **tap-issue** - Process package requests from issues
+- ✅ **tap-validate** - Validate and auto-fix style issues (4x faster than bash)
+
+**Status:** Go migration is functionally complete. All critical workflows work via Go tools.
+
+### 🔴 Action Required: Bash Script Deprecation
+
+**DECISION (2026-02-09):** Deprecate and remove all bash scripts.
+
+**Rationale:**
+- Go tools provide all functionality
+- Bash scripts create maintenance burden
+- Two implementations = confusion and drift
+- Go tools are faster, better tested, more reliable
+
+### Deprecation Plan
+
+#### Step 1: Audit Existing Scripts (IMMEDIATE)
+
+**Find all bash scripts:**
+```bash
+scripts/
+├── new-formula.sh         → SUPERSEDED by tap-formula
+├── new-cask.sh            → SUPERSEDED by tap-cask  
+├── from-issue.sh          → SUPERSEDED by tap-issue
+├── validate-all.sh        → SUPERSEDED by tap-validate
+├── update-sha256.sh       → SUPERSEDED by tap-validate + renovate
+├── setup-hooks.sh         → KEEP (one-time setup, simple)
+└── git-hooks/
+    └── pre-commit         → KEEP (git hook, not a tool)
+```
+
+**To keep (justification required):**
+- `setup-hooks.sh` - One-time setup script, simple bash is appropriate
+- `git-hooks/pre-commit` - Git hook, must be bash/POSIX shell
+
+**To remove:**
+- `new-formula.sh` - Fully replaced by `tap-formula`
+- `new-cask.sh` - Fully replaced by `tap-cask`
+- `from-issue.sh` - Fully replaced by `tap-issue`
+- `validate-all.sh` - Fully replaced by `tap-validate all`
+- `update-sha256.sh` - Functionality in `tap-validate` + renovate workflow
+
+#### Step 2: Check for Missing Functionality (VERIFY)
+
+**Action:** For each bash script, verify Go tool has feature parity.
+
+**Verification commands:**
+```bash
+# Compare new-formula.sh vs tap-formula
+grep "function\|^[a-z_]*() {" scripts/new-formula.sh
+./tap-tools/tap-formula --help
+
+# Compare new-cask.sh vs tap-cask  
+grep "function\|^[a-z_]*() {" scripts/new-cask.sh
+./tap-tools/tap-cask --help
+
+# Compare validate-all.sh vs tap-validate
+grep "function\|^[a-z_]*() {" scripts/validate-all.sh
+./tap-tools/tap-validate --help
+```
+
+**If ANY functionality is missing:** Port to Go tool before removing bash script.
+
+#### Step 3: Convert Remaining Scripts (IF NEEDED)
+
+**Candidates for conversion:**
+- `setup-hooks.sh` - Consider `tap-tools/tap-setup` for consistency
+  - **Decision needed:** Keep as bash (simple) or convert to Go (consistency)?
+  
+**If converting setup-hooks.sh:**
+```go
+// cmd/tap-setup/main.go
+func main() {
+    if err := installPreCommitHook(); err != nil {
+        log.Fatal(err)
+    }
+    fmt.Println("✓ Pre-commit hook installed")
+}
+```
+
+#### Step 4: Remove Bash Scripts (AGGRESSIVE)
+
+**Execution plan:**
+1. Verify feature parity (Step 2) ✅
+2. Update all documentation to reference Go tools only
+3. Add deprecation warnings to bash scripts (optional: can skip and just remove)
+4. Remove bash scripts in single commit
+5. Update CI/documentation references
+
+**Commit message example:**
+```
+chore(scripts): remove deprecated bash scripts
+
+Removes bash scripts superseded by Go tools:
+- new-formula.sh → use tap-formula
+- new-cask.sh → use tap-cask
+- from-issue.sh → use tap-issue
+- validate-all.sh → use tap-validate all
+- update-sha256.sh → functionality in tap-validate + renovate
+
+All functionality preserved in faster, better-tested Go implementations.
+
+Breaking change: Users must use tap-tools instead of scripts/.
+```
+
+#### Step 5: Update Documentation (SIMULTANEOUS)
+
+**Files to update:**
+- README.md - Remove script references, show Go tool usage
+- docs/AGENT_GUIDE.md - Already uses Go tools ✅
+- .github/copilot-instructions.md - Already uses Go tools ✅
+- tap-tools/README.md - Emphasize these are THE tools (not alternatives)
+- Any workflow files in `.github/workflows/` that call scripts
+
+**Search for references:**
+```bash
+grep -r "scripts/" .github/ docs/ *.md | grep -v ".git"
+```
+
+### Timeline (AGGRESSIVE)
+
+| Task | Effort | Status |
+|------|--------|--------|
+| **Step 1: Audit scripts** | 15 min | ⏳ TODO |
+| **Step 2: Verify feature parity** | 30 min | ⏳ TODO |
+| **Step 3: Convert remaining (if any)** | 1-2 hours | ⏳ TODO (conditional) |
+| **Step 4: Remove bash scripts** | 15 min | ⏳ TODO |
+| **Step 5: Update documentation** | 30 min | ⏳ TODO |
+
+**Total: ~2-3 hours** (or ~1 hour if no conversion needed)
+
 ---
 
 ## Next Steps
 
-1. **Review this plan** with stakeholders
-2. **Set up Go project** in `tap-tools/` subdirectory
-3. **Start Phase 1** implementation
-4. **Create tracking issue** with checkboxes for each phase
-5. **Schedule weekly check-ins** to monitor progress
-
----
-
-## Questions to Answer
-
-1. Should tap-tools be a separate repository or subdirectory?
-2. Do we need Windows/macOS support for the CLI tools themselves?
-3. Should we distribute binaries via Homebrew tap?
+1. **Execute deprecation plan** (Steps 1-5 above)
+2. **Create tracking issue** if needed (optional: just do it)
+3. **Ship immediately** after verification (aggressive strategy)
 4. Do we need a plugin system for custom build systems?
 5. Should we support non-GitHub repositories (GitLab, Gitea)?
 
