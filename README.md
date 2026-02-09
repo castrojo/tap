@@ -31,7 +31,7 @@ brew install --cask app-name        # Cask (GUI app)
 
 **Sublime Text** - Sophisticated text editor for code, markup and prose
 ```bash
-brew install --cask sublime-text
+brew install --cask castrojo/tap/sublime-text-linux
 ```
 
 After installation, Sublime Text can be launched from the command line with `subl`.

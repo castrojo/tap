@@ -4,6 +4,8 @@ Complete, copy-paste ready cask templates for Linux installations. Each pattern 
 
 **⚠️ LINUX ONLY:** These patterns are for Linux systems only. All examples use Linux binaries.
 
+**⚠️ CASK NAMING:** ALL casks MUST use `-linux` suffix (e.g., `app-name-linux`). This prevents collision with macOS casks and makes the Linux-only nature explicit.
+
 ## Package Format Priority
 
 **When selecting which asset to package, follow this strict priority:**
@@ -64,7 +66,7 @@ sha256sum --check SHA256SUMS
 ### Complete Cask Template
 
 ```ruby
-cask "app-name" do
+cask "app-name-linux" do
   version "1.0.0"
   sha256 "SHA256_HASH_HERE"
   
@@ -74,9 +76,6 @@ cask "app-name" do
   desc "Brief description of what this application does"
   homepage "https://github.com/USERNAME/PROJECT"
   license "MIT"
-
-  # Ensure Linux-only installation
-  depends_on :linux
   
   # Specify architecture if binary is arch-specific
   # depends_on arch: :x86_64

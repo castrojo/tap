@@ -203,6 +203,15 @@ Package names are **always derived from the repository name**, never manually sp
 - Repository: `BurntSushi/ripgrep` → Package: `ripgrep`
 - Repository: `user/My_Cool_App` → Package: `my-cool-app`
 
+**Linux Cask Naming (Required):**
+- ALL casks MUST use `-linux` suffix
+- Example: `sublime-text-linux`, `jetbrains-toolbox-linux`
+- Prevents collision with official macOS casks
+- The `new-cask.sh` script automatically appends `-linux` if not present
+
+**Formula naming:**
+- No suffix required for formulas (CLI tools)
+
 ### Commit Workflow
 1. Make changes
 2. Run `scripts/validate-all.sh` (if available)
