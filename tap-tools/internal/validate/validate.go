@@ -16,6 +16,7 @@ type ValidateResult struct {
 }
 
 // ValidateFile validates a formula or cask file using brew audit and brew style
+// Note: brew audit is skipped during generation since it requires the package to be in a tap
 func ValidateFile(filePath string, isCask bool, autoFix bool) (*ValidateResult, error) {
 	result := &ValidateResult{
 		AuditPassed: true,
@@ -24,30 +25,19 @@ func ValidateFile(filePath string, isCask bool, autoFix bool) (*ValidateResult, 
 		Errors:      []string{},
 	}
 
-	// Run brew audit
-	if err := runAudit(filePath, isCask); err != nil {
-		result.AuditPassed = false
-		result.Errors = append(result.Errors, fmt.Sprintf("audit failed: %v", err))
-	}
+	// Skip brew audit - it requires the file to be in a tapped repository
+	// The pre-commit hook will run audit after the file is committed to the tap
 
 	// Run brew style (with --fix if autoFix is true)
 	if err := runStyle(filePath, autoFix); err != nil {
 		result.StylePassed = false
 		result.Errors = append(result.Errors, fmt.Sprintf("style check failed: %v", err))
-	} else if autoFix {
-		result.Fixed = true
-	}
-
-	// If autoFix was enabled and style passed, re-run audit to ensure fixes didn't break anything
-	if autoFix && result.Fixed && result.AuditPassed {
-		if err := runAudit(filePath, isCask); err != nil {
-			result.AuditPassed = false
-			result.Errors = append(result.Errors, fmt.Sprintf("audit failed after style fixes: %v", err))
-		}
-	}
-
-	if len(result.Errors) > 0 {
+		// Return error only if style check failed
 		return result, fmt.Errorf("validation failed: %s", strings.Join(result.Errors, "; "))
+	}
+
+	if autoFix {
+		result.Fixed = true
 	}
 
 	return result, nil

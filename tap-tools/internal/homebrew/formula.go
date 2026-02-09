@@ -26,12 +26,17 @@ type FormulaData struct {
 }
 
 // formulaTemplate is the template for generating Homebrew formulas
-const formulaTemplate = `class {{ .ClassName }} < Formula
-  desc "{{ .Description }}"
-  homepage "{{ .Homepage }}"
+const formulaTemplate = `# typed: strict
+# frozen_string_literal: true
+
+# {{ cleanDesc .Description }}
+class {{ .ClassName }} < Formula
+  desc "{{ cleanDesc .Description }}"
+  homepage "{{ if .Homepage }}{{ .Homepage }}{{ else }}https://github.com/{{ .PackageName }}{{ end }}"
   url "{{ .URL }}"
   sha256 "{{ .SHA256 }}"
 {{- if .License }}
+
   license "{{ .License }}"
 {{- end }}
 {{- if .Dependencies }}
@@ -49,7 +54,9 @@ end
 
 // GenerateFormula generates a Homebrew formula from FormulaData
 func GenerateFormula(data *FormulaData) (string, error) {
-	tmpl, err := template.New("formula").Parse(formulaTemplate)
+	tmpl, err := template.New("formula").Funcs(template.FuncMap{
+		"cleanDesc": cleanDesc,
+	}).Parse(formulaTemplate)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse formula template: %w", err)
 	}

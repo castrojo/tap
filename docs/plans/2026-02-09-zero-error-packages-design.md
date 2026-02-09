@@ -516,11 +516,13 @@ smoke_tests:
 **File:** `tap-tools/cmd/tap-cask/generate.go`
 **Change:** After writing cask file, run validation
 **Estimated effort:** 1 hour
+**Status:** ✅ COMPLETED (2026-02-09)
 
 #### Task 2: Update tap-formula
 **File:** `tap-tools/cmd/tap-formula/generate.go`
 **Change:** Same as tap-cask
 **Estimated effort:** 1 hour
+**Status:** ✅ COMPLETED (2026-02-09)
 
 #### Task 3: Enhance copilot-instructions.md
 **File:** `.github/copilot-instructions.md`
@@ -534,6 +536,7 @@ smoke_tests:
 - Generate new formula with tap-formula (should auto-validate)
 - Manual workflow: generate → validate → add → commit (verify pre-commit hook works)
 - Verify complete command sequence in documentation
+**Status:** ✅ COMPLETED (2026-02-09)
 
 **Total effort for Phase 2:** ~2.5 hours (down from 3-4 hours)
 
@@ -561,11 +564,11 @@ smoke_tests:
 ## Success Metrics
 
 ### Phase 2 Success Criteria
-- [ ] tap-cask auto-validates after generation
-- [ ] tap-formula auto-validates after generation
+- [x] tap-cask auto-validates after generation
+- [x] tap-formula auto-validates after generation
 - [x] Copilot instructions document complete workflow (validate → add → commit → push)
 - [x] Copilot instructions explain why git add is needed after --fix
-- [ ] Zero style failures in next 5 PRs
+- [ ] Zero style failures in next 5 PRs (monitoring in progress)
 
 ### Phase 3 Success Criteria
 - [ ] CI tests installation on Ubuntu

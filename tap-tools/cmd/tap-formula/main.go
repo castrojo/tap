@@ -135,10 +135,13 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 	} else {
 		// Try to find pre-built Linux binary
 		var assets []*platform.Asset
-		for _, asset := range release.Assets {
-			detected := platform.DetectPlatform(asset.Name)
-			if detected != nil {
-				assets = append(assets, detected)
+		for _, ghAsset := range release.Assets {
+			asset := platform.DetectPlatform(ghAsset.Name)
+			if asset != nil {
+				asset.URL = ghAsset.URL
+				asset.DownloadURL = ghAsset.BrowserDownloadURL
+				asset.Size = ghAsset.Size
+				assets = append(assets, asset)
 			}
 		}
 
@@ -160,7 +163,7 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 				return fmt.Errorf("failed to select asset: %w", err)
 			}
 
-			downloadURL = selectedAsset.URL
+			downloadURL = selectedAsset.DownloadURL
 			fmt.Println(successStyle.Render(fmt.Sprintf("✓ Selected: %s (%s - Priority %d)",
 				selectedAsset.Name, selectedAsset.Format, selectedAsset.Priority)))
 		}

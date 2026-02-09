@@ -36,22 +36,25 @@ type CaskData struct {
 }
 
 // caskTemplate is the template for generating Homebrew casks
-const caskTemplate = `cask "{{ .Token }}" do
+const caskTemplate = `# typed: strict
+# frozen_string_literal: true
+
+cask "{{ .Token }}" do
   version "{{ .Version }}"
   sha256 "{{ .SHA256 }}"
 
   url "{{ .URL }}"
   name "{{ .AppName }}"
-  desc "{{ .Description }}"
-  homepage "{{ .Homepage }}"
+  desc "{{ cleanDesc .Description }}"
+  homepage "{{ if .Homepage }}{{ .Homepage }}{{ else }}https://github.com/{{ .AppName }}{{ end }}"
 {{- if .License }}
+
   license "{{ .License }}"
 {{- end }}
 
   # Linux-only cask
   depends_on formula: "bash"
-
-  {{- if or .HasDesktopFile .HasIcon }}
+{{- if or .HasDesktopFile .HasIcon }}
 
   preflight do
     {{- if .XDGDirs }}
@@ -90,19 +93,51 @@ const caskTemplate = `cask "{{ .Token }}" do
   {{- if .ZapTrash }}
 
   zap trash: [
-    {{- range $i, $path := .ZapTrash }}
-    {{- if $i }},{{ end }}
-    "{{ $path }}"
+    {{- range $i, $path := sortStrings .ZapTrash }}
+    {{- if $i }},
     {{- end }}
+    "{{ $path }}"
+    {{- end }},
   ]
   {{- end }}
 end
 `
 
+// cleanDesc removes leading articles and trailing periods from descriptions
+func cleanDesc(desc string) string {
+	// Remove leading articles
+	desc = strings.TrimPrefix(desc, "A ")
+	desc = strings.TrimPrefix(desc, "An ")
+	desc = strings.TrimPrefix(desc, "The ")
+
+	// Remove trailing period
+	desc = strings.TrimSuffix(desc, ".")
+
+	return desc
+}
+
+// sortStrings returns a sorted copy of a string slice
+func sortStrings(strs []string) []string {
+	sorted := make([]string, len(strs))
+	copy(sorted, strs)
+	// Simple bubble sort for small arrays
+	for i := 0; i < len(sorted); i++ {
+		for j := i + 1; j < len(sorted); j++ {
+			if sorted[i] > sorted[j] {
+				sorted[i], sorted[j] = sorted[j], sorted[i]
+			}
+		}
+	}
+	return sorted
+}
+
 // GenerateCask generates a Homebrew cask from the provided data
 func GenerateCask(data *CaskData) (string, error) {
-	// Parse template
-	tmpl, err := template.New("cask").Parse(caskTemplate)
+	// Parse template with custom functions
+	tmpl, err := template.New("cask").Funcs(template.FuncMap{
+		"cleanDesc":   cleanDesc,
+		"sortStrings": sortStrings,
+	}).Parse(caskTemplate)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse template: %w", err)
 	}
