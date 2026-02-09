@@ -357,6 +357,94 @@ Located in `tap-tools/`, pre-built binaries available:
 
 See [tap-tools/README.md](tap-tools/README.md) for complete documentation.
 
+## Environment Variables
+
+### GITHUB_TOKEN (Required for API Access)
+
+**Status:** Required for tap-tools GitHub API access  
+**Rate Limits:**
+- Without token: 60 requests/hour (unauthenticated)
+- With token: 5,000 requests/hour (authenticated)
+- GitHub Actions: 15,000 requests/hour (highest)
+
+**Why It's Required:**
+
+All tap-tools (`tap-issue`, `tap-cask`, `tap-formula`) require GitHub API access for:
+- Fetching repository metadata
+- Accessing release information and assets
+- Verifying upstream checksums
+- Creating PRs and commenting on issues (tap-issue only)
+
+**Setting Up GITHUB_TOKEN:**
+
+1. **GitHub Actions (Automatic):**
+   ```bash
+   # Token is automatically available in GitHub Actions workflows
+   # No setup needed - it's injected by GitHub
+   ./tap-tools/tap-issue process 42
+   ```
+
+2. **Local Development:**
+   ```bash
+   # Use gh CLI to get your token (RECOMMENDED)
+   export GITHUB_TOKEN=$(gh auth token)
+   
+   # Verify it's set
+   echo $GITHUB_TOKEN
+   
+   # Check your rate limit
+   gh api rate_limit
+   ```
+
+3. **Manual Token Creation:**
+   ```bash
+   # 1. Go to: https://github.com/settings/tokens
+   # 2. Create token with 'repo' scope (read access)
+   # 3. Export the token:
+   export GITHUB_TOKEN=ghp_your_token_here
+   ```
+
+**Verification:**
+
+```bash
+# Check if token is set
+if [ -z "$GITHUB_TOKEN" ]; then
+    echo "⚠️  GITHUB_TOKEN not set"
+    echo "Run: export GITHUB_TOKEN=\$(gh auth token)"
+else
+    echo "✅ GITHUB_TOKEN is set"
+fi
+
+# Check current rate limit
+gh api rate_limit
+```
+
+**Troubleshooting:**
+
+If you see "GITHUB_TOKEN environment variable not set" errors:
+
+1. **In GitHub Actions:** Token should be automatically available. If not:
+   - Check workflow permissions: `gh api repos/castrojo/tap/actions/permissions`
+   - Verify workflow has `contents: read` permission or higher
+   
+2. **In Local Development:**
+   ```bash
+   # Quick fix - set token from gh CLI
+   export GITHUB_TOKEN=$(gh auth token)
+   
+   # Or authenticate with gh if needed
+   gh auth login
+   export GITHUB_TOKEN=$(gh auth token)
+   ```
+
+3. **Rate Limit Exceeded:**
+   ```bash
+   # Check when rate limit resets
+   gh api rate_limit | jq '.rate'
+   
+   # Wait for reset or use a different token
+   ```
+
 ## Best Practices
 
 ### First-Time Setup
