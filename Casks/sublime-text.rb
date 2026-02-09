@@ -7,17 +7,11 @@ cask "sublime-text" do
   name "Sublime Text"
   desc "Sophisticated text editor for code, markup and prose"
   homepage "https://www.sublimetext.com/"
-  license "Proprietary"
 
   # Ensure Linux-only installation
   depends_on :linux
 
   binary "sublime_text/sublime_text", target: "subl"
-
-  postflight do
-    # Create Data directory for portable configuration
-    FileUtils.mkdir_p("#{staged_path}/sublime_text/Data")
-  end
 
   test do
     # Verify binary exists and is executable
