@@ -1,0 +1,51 @@
+name: 🐛 Bug Report
+description: Report an issue with an existing package
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: input
+    id: package
+    attributes:
+      label: Package Name
+      description: Which package has the issue?
+      placeholder: "e.g., ripgrep"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What's Wrong?
+      description: Describe the issue you're experiencing
+      placeholder: "Package fails to install, incorrect version, etc."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this issue?
+      placeholder: |
+        1. brew install package-name
+        2. See error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: Output
+      description: Paste any error messages or relevant output
+      render: shell
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: Homebrew Version
+      description: Output of `brew --version`
+      placeholder: "Homebrew 4.2.0"
+    validations:
+      required: true

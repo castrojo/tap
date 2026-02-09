@@ -1,0 +1,41 @@
+name: 📦 Package Request
+description: Request a new package to be added to the tap
+title: "[Package]: "
+labels: ["package-request"]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Package Name
+      description: What should the package be called?
+      placeholder: "e.g., ripgrep, neovim, delta"
+    validations:
+      required: true
+
+  - type: input
+    id: url
+    attributes:
+      label: URL
+      description: Repository, homepage, or download URL
+      placeholder: "https://github.com/user/repo"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What does this package do?
+      placeholder: "A brief description of the package's purpose and key features"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I searched existing issues and this package hasn't been requested
+          required: true
+        - label: This package runs on Linux
+          required: true
