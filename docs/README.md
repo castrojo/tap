@@ -9,6 +9,7 @@ This directory contains all documentation for the homebrew-tap project, organize
 ## Quick Start
 
 **For AI Agents:** Start here
+- **[AGENT_BEST_PRACTICES.md](AGENT_BEST_PRACTICES.md)** - ⚠️ **READ THIS FIRST!** Common errors and how to avoid them
 - [AGENT_GUIDE.md](AGENT_GUIDE.md) - Comprehensive workflow for AI agents
 - [CASK_CREATION_GUIDE.md](CASK_CREATION_GUIDE.md) - **Critical rules** for creating casks (read first!)
 
@@ -24,6 +25,7 @@ This directory contains all documentation for the homebrew-tap project, organize
 
 | Document | Purpose | Status |
 |----------|---------|--------|
+| [AGENT_BEST_PRACTICES.md](AGENT_BEST_PRACTICES.md) | **Common errors and prevention** (READ FIRST!) | ✅ Complete |
 | [CASK_CREATION_GUIDE.md](CASK_CREATION_GUIDE.md) | Rules for creating casks (GUI apps) | ✅ Complete |
 | [FORMULA_PATTERNS.md](FORMULA_PATTERNS.md) | Copy-paste templates for formulas | ✅ Complete |
 | [CASK_PATTERNS.md](CASK_PATTERNS.md) | Copy-paste templates for casks | ✅ Complete |
@@ -217,16 +219,18 @@ Documented in [plans/2026-02-09-zero-error-packages-design.md](plans/2026-02-09-
 ## Getting Started Paths
 
 ### Path 1: I want to create a new cask (GUI app)
-1. Read [CASK_CREATION_GUIDE.md](CASK_CREATION_GUIDE.md) (10 min)
-2. Use `./tap-tools/tap-cask generate <github-url>` (2 min)
-3. Validate: `./tap-tools/tap-validate file Casks/app-linux.rb --fix` (1 min)
-4. Commit and push
+1. Read [AGENT_BEST_PRACTICES.md](AGENT_BEST_PRACTICES.md) (5 min) - **Prevents CI failures!**
+2. Read [CASK_CREATION_GUIDE.md](CASK_CREATION_GUIDE.md) (10 min)
+3. Use `./tap-tools/tap-cask generate <github-url>` (2 min)
+4. Validate: `./tap-tools/tap-validate file Casks/app-linux.rb --fix` (1 min)
+5. Commit and push
 
 ### Path 2: I want to create a new formula (CLI tool)
-1. Read [FORMULA_PATTERNS.md](FORMULA_PATTERNS.md) (5 min)
-2. Use `./tap-tools/tap-formula generate <github-url>` (2 min)
-3. Validate: `./tap-tools/tap-validate file Formula/tool.rb --fix` (1 min)
-4. Commit and push
+1. Read [AGENT_BEST_PRACTICES.md](AGENT_BEST_PRACTICES.md) (5 min) - **Prevents CI failures!**
+2. Read [FORMULA_PATTERNS.md](FORMULA_PATTERNS.md) (5 min)
+3. Use `./tap-tools/tap-formula generate <github-url>` (2 min)
+4. Validate: `./tap-tools/tap-validate file Formula/tool.rb --fix` (1 min)
+5. Commit and push
 
 ### Path 3: I want to understand the workflow
 1. Read [AGENT_GUIDE.md](AGENT_GUIDE.md) (15 min)

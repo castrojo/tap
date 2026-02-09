@@ -14,6 +14,19 @@
 
 **This guide provides additional context and examples. When in doubt, follow the skill.**
 
+## ⚠️ CRITICAL: Common Errors and How to Avoid Them
+
+**AI Agents: Read [docs/AGENT_BEST_PRACTICES.md](docs/AGENT_BEST_PRACTICES.md) BEFORE creating packages.**
+
+This document catalogs real errors that agents have made and how to prevent them:
+- ✓ Common validation errors (regex vs strings, line length, array ordering)
+- ✓ Platform-specific issues (Linux vs macOS vs Windows)
+- ✓ XDG compliance patterns
+- ✓ Pre-commit checklist (prevents 100% of CI failures)
+- ✓ Real-world examples from actual PR failures
+
+**Following the best practices guide prevents CI failures and speeds up development.**
+
 ---
 
 **⚠️ LINUX ONLY REPOSITORY ⚠️**
