@@ -487,60 +487,66 @@ updated_content = content.gsub("Exec=rancher-desktop", "Exec=#{HOMEBREW_PREFIX}/
 2. The `--fix` flag would have auto-corrected this
 3. Never bypass validation
 
-### Example 2: Sublime Text XDG Compliance
+### Example 2: Learning from Official Homebrew Casks
 
-**Reference cask:** `Casks/sublime-text-linux.rb`
+**For macOS cask patterns, refer to official Homebrew casks:**
+- [Visual Studio Code](https://github.com/Homebrew/homebrew-cask/blob/master/Casks/v/visual-studio-code.rb) - Multi-architecture, binaries, auto-updates
+- [Firefox](https://github.com/Homebrew/homebrew-cask/blob/master/Casks/f/firefox.rb) - Multi-language, shimscripts, conflicts handling
 
-This is the gold standard for XDG-compliant casks. Study it before creating packages.
+**For Linux XDG compliance, refer to this tap's casks:**
+- `Casks/quarto-linux.rb` - Simple CLI tool with single binary
+- `Casks/sublime-text-linux.rb` - GUI app with desktop integration
 
-**What it does right:**
-1. Uses XDG environment variables everywhere
-2. Creates directories in `preflight`
-3. Fixes desktop file paths
-4. Installs to user directories
-5. Properly alphabetizes `zap trash` array
+**Key patterns for Linux casks:**
 
 ```ruby
-cask "sublime-text-linux" do
-  version "4200"
-  sha256 "36f69c551ad18ee46002be4d9c523fe545d93b67fea67beea731e724044b469f"
+cask "myapp-linux" do
+  version "1.0.0"
+  sha256 "abc123..."
 
-  url "https://download.sublimetext.com/sublime_text_build_#{version}_x64.tar.xz"
-  name "Sublime Text"
-  desc "Sophisticated text editor for code, markup and prose"
-  homepage "https://www.sublimetext.com/"
+  url "https://example.com/myapp-linux.tar.gz"
+  name "MyApp"
+  desc "Application description"
+  homepage "https://example.com"
 
-  binary "sublime_text/sublime_text", target: "subl"
-  artifact "sublime_text/sublime_text.desktop",
-           target: "#{ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")}/applications/sublime-text.desktop"
-  artifact "sublime_text/Icon/128x128/sublime-text.png",
-           target: "#{ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")}/icons/sublime-text.png"
+  # Binary installation
+  binary "myapp"
 
+  # Desktop integration (GUI apps) - uses XDG environment variables
+  artifact "myapp.desktop",
+           target: "#{ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")}/applications/myapp.desktop"
+  artifact "icon.png",
+           target: "#{ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")}/icons/myapp.png"
+
+  # Fix paths in preflight
   preflight do
     xdg_data_home = ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")
     FileUtils.mkdir_p "#{xdg_data_home}/applications"
     FileUtils.mkdir_p "#{xdg_data_home}/icons"
 
-    desktop_file = "#{staged_path}/sublime_text/sublime_text.desktop"
+    desktop_file = "#{staged_path}/myapp.desktop"
     if File.exist?(desktop_file)
       content = File.read(desktop_file)
-      updated_content = content.gsub(%r{/opt/sublime_text/sublime_text}, "#{HOMEBREW_PREFIX}/bin/subl")
+      updated_content = content.gsub("Exec=myapp", "Exec=#{HOMEBREW_PREFIX}/bin/myapp")
+      updated_content = updated_content.gsub("Icon=myapp", "Icon=#{xdg_data_home}/icons/myapp.png")
       File.write(desktop_file, updated_content)
     end
   end
 
+  # Cleanup user data (alphabetically ordered - CACHE before CONFIG)
   zap trash: [
-    "#{ENV.fetch("XDG_CACHE_HOME", "#{Dir.home}/.cache")}/sublime-text",
-    "#{ENV.fetch("XDG_CONFIG_HOME", "#{Dir.home}/.config")}/sublime-text",
+    "#{ENV.fetch("XDG_CACHE_HOME", "#{Dir.home}/.cache")}/myapp",
+    "#{ENV.fetch("XDG_CONFIG_HOME", "#{Dir.home}/.config")}/myapp",
+    "#{ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")}/myapp",
   ]
 end
 ```
 
 **Key lessons:**
-- XDG variables everywhere (lines 12-13, 17-22)
-- Directory creation in preflight (lines 18-19)
-- Desktop file path fixing (lines 21-26)
-- Alphabetically sorted `zap trash` (lines 29-32, CACHE before CONFIG)
+- XDG environment variables for all user paths (not hardcoded)
+- Directory creation in preflight before use
+- Desktop file path fixing for Linux integration
+- Alphabetically sorted arrays (CACHE before CONFIG)
 
 ---
 
@@ -557,7 +563,9 @@ end
 
 **Remember:** Every CI failure is caused by skipping a step. Follow the workflow and CI will never fail.
 
-**When in doubt:** Look at `Casks/sublime-text-linux.rb` - it's the reference implementation.
+**When in doubt:**
+- For macOS patterns: Check [official Homebrew casks](https://github.com/Homebrew/homebrew-cask/tree/master/Casks)
+- For Linux XDG patterns: Check this tap's existing casks (`Casks/*.rb`)
 
 ---
 
