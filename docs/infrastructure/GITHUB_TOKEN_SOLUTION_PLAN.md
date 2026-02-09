@@ -570,8 +570,8 @@ When working on package requests via `tap-issue`:
 - `tap-tools/internal/github/client.go` - Enhanced with rate limiting and error handling
 - `tap-tools/cmd/tap-issue/main.go` - Updated error handling
 
-**Files Created:**
-- `.github/workflows/test-github-token.yml` - Token availability test workflow
+**Files Created (Not Included in PR #23):**
+- `.github/workflows/test-github-token.yml` - Token availability test workflow (created locally, excluded due to OAuth token scope limitations)
 
 **Benefits:**
 - ✅ Clear, actionable error messages for missing tokens

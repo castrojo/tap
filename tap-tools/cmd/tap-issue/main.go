@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/castrojo/tap-tools/internal/github"
 	"github.com/castrojo/tap-tools/internal/issues"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
@@ -97,11 +98,10 @@ func runProcess(cmd *cobra.Command, args []string) error {
 	printSection("Preflight Checks")
 
 	// Check for GitHub token - use the enhanced error message from github package
-	// This will provide context-specific error messages based on the environment
-	if token := os.Getenv("GITHUB_TOKEN"); token == "" {
-		printError("GITHUB_TOKEN environment variable not set")
-		printInfo("Run: export GITHUB_TOKEN=$(gh auth token)")
-		return fmt.Errorf("GITHUB_TOKEN required")
+	// This provides context-specific error messages based on the environment
+	if _, err := github.NewClientWithTokenCheck(); err != nil {
+		printError(err.Error())
+		return err
 	}
 	printSuccess("GitHub token found")
 

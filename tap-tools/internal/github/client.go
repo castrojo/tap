@@ -149,7 +149,8 @@ func NewClientWithTokenCheck() (*Client, error) {
 func (c *Client) CheckRateLimit() error {
 	rateLimit, _, err := c.gh.RateLimits(c.ctx)
 	if err != nil {
-		// Silent fail - rate limit check is not critical
+		// Warn that the rate limit check failed, but don't block execution.
+		fmt.Fprintf(os.Stderr, "⚠️  Could not check GitHub API rate limit: %v\n", err)
 		return nil
 	}
 
