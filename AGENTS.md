@@ -311,10 +311,26 @@ See [tap-tools/README.md](tap-tools/README.md) for complete documentation.
 
 ## Best Practices
 
+### First-Time Setup
+
+**Install git hooks after cloning:**
+```bash
+./scripts/setup-hooks.sh
+```
+
+This installs a pre-commit hook that:
+- Automatically validates all Ruby files before commit
+- Auto-fixes style issues with `--fix` flag
+- Blocks commits that fail validation
+- Prevents CI failures from style issues
+
+**The hook is mandatory for all contributors.** If the hook blocks a commit, fix the issues and try again. Do not bypass with `--no-verify` unless absolutely necessary.
+
 ### Code Style
 - Be surgical with minimal code changes
 - Follow existing patterns in the codebase
-- Run `./tap-tools/tap-validate all` before committing
+- Pre-commit hook automatically validates (installed via `./scripts/setup-hooks.sh`)
+- Manual validation: `./tap-tools/tap-validate all --fix`
 - Keep formulas and casks simple and readable
 
 ### Package Naming
