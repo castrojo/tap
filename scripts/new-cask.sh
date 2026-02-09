@@ -95,40 +95,30 @@ fi
 
 success "Latest version: $VERSION (tag: $RELEASE_TAG)"
 
-# Find binary asset (AppImage, .deb, or tarball)
+# Find binary asset (tar.gz or .zip)
 info "Detecting binary assets..."
 ASSETS=$(echo "$RELEASE_DATA" | jq -r '.assets')
 
-# Try to find AppImage first
-ASSET_URL=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.AppImage$"; "i")) | .browser_download_url' | head -n1)
-ASSET_TYPE="appimage"
-
-# If no AppImage, try .deb
-if [ -z "$ASSET_URL" ] || [ "$ASSET_URL" = "null" ]; then
-    ASSET_URL=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.deb$"; "i")) | .browser_download_url' | head -n1)
-    ASSET_TYPE="deb"
-fi
-
-# If no .deb, try tar.gz
-if [ -z "$ASSET_URL" ] || [ "$ASSET_URL" = "null" ]; then
-    ASSET_URL=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.(tar\\.gz|tgz)$"; "i")) | .browser_download_url' | head -n1)
-    ASSET_TYPE="tarball"
-fi
+# Try to find tar.gz first
+ASSET_URL=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.(tar\\.gz|tgz)$"; "i")) | .browser_download_url' | head -n1)
+ASSET_TYPE="tarball"
+ASSET_NAME=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.(tar\\.gz|tgz)$"; "i")) | .name' | head -n1)
 
 # If no tarball, try .zip
 if [ -z "$ASSET_URL" ] || [ "$ASSET_URL" = "null" ]; then
     ASSET_URL=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.zip$"; "i")) | .browser_download_url' | head -n1)
     ASSET_TYPE="zip"
+    ASSET_NAME=$(echo "$ASSETS" | jq -r '.[] | select(.name | test("\\.zip$"; "i")) | .name' | head -n1)
 fi
 
 # If still nothing found, show available assets and error
 if [ -z "$ASSET_URL" ] || [ "$ASSET_URL" = "null" ]; then
     warn "Available assets in latest release:"
     echo "$ASSETS" | jq -r '.[].name' | sed 's/^/  - /'
-    error "No suitable binary asset found. Looking for: .AppImage, .deb, .tar.gz, .tgz, or .zip"
+    error "No suitable binary asset found. Looking for: .tar.gz, .tgz, or .zip"
 fi
 
-success "Found $ASSET_TYPE: $ASSET_URL"
+success "Found $ASSET_TYPE: $ASSET_NAME"
 
 # Download asset and calculate SHA256
 info "Downloading asset to calculate SHA256..."
@@ -172,60 +162,17 @@ VERSION_LINE="  version \"$VERSION\""
 URL_LINE="  url \"$ASSET_URL\""
 SHA_LINE="  sha256 \"$SHA256\""
 
-# Generate install stanza based on asset type
-INSTALL_STANZA=""
-case "$ASSET_TYPE" in
-    appimage)
-        INSTALL_STANZA="  # Install the AppImage
-  binary_name = \"$CASK_NAME\"
-  target = \"#{appdir}/#{binary_name}.AppImage\"
-  
-  # Make executable and install
-  FileUtils.chmod 0755, staged_path.to_s
-  FileUtils.mv staged_path, target"
-        ;;
-    deb)
-        INSTALL_STANZA="  # Extract and install from .deb
-  # Note: This is a simplified installation. You may need to customize
-  # based on the actual .deb contents
-  system \"dpkg-deb\", \"-x\", staged_path, buildpath
-  
-  # Install binaries (adjust paths as needed)
-  bin.install Dir[\"usr/bin/*\"] if Dir.exist?(\"usr/bin\")
-  
-  # Install libraries (adjust paths as needed)
-  lib.install Dir[\"usr/lib/*\"] if Dir.exist?(\"usr/lib\")
-  
-  # Install share files (adjust paths as needed)
-  share.install Dir[\"usr/share/*\"] if Dir.exist?(\"usr/share\")"
-        ;;
-    tarball|zip)
-        INSTALL_STANZA="  # Extract and install from archive
-  # Note: Customize based on actual archive contents
-  bin.install \"$CASK_NAME\" if File.exist?(\"$CASK_NAME\")
-  
-  # If binary has a different name, adjust accordingly
-  # Example: bin.install \"actual-binary-name\" => \"$CASK_NAME\""
-        ;;
-esac
+# Generate binary stanza (proper Cask DSL)
+# Note: User will need to customize based on actual binary name in archive
+BINARY_STANZA="  binary \"$CASK_NAME\""
 
-# Generate test stanza based on asset type
-TEST_STANZA=""
-case "$ASSET_TYPE" in
-    appimage)
-        TEST_STANZA="    # Test that the AppImage exists and is executable
-    assert_predicate appdir/\"#{binary_name}.AppImage\", :exist?
-    assert_predicate appdir/\"#{binary_name}.AppImage\", :executable?"
-        ;;
-    *)
-        TEST_STANZA="    # Test that the binary exists and is executable
-    assert_predicate bin/\"$CASK_NAME\", :exist?
-    assert_predicate bin/\"$CASK_NAME\", :executable?
+# Generate test stanza
+TEST_STANZA="    # Test that the binary exists and is executable
+    assert_predicate \"#{prefix}/$CASK_NAME\", :exist?
+    assert_predicate \"#{prefix}/$CASK_NAME\", :executable?
     
-    # Try running with --version or --help
-    system \"#{bin}/$CASK_NAME\", \"--version\""
-        ;;
-esac
+    # Try running with --version
+    system \"#{prefix}/$CASK_NAME\", \"--version\""
 
 cat > "$CASK_PATH" << EOF
 cask "$CASK_NAME" do
@@ -238,9 +185,7 @@ $URL_LINE
   homepage "$HOMEPAGE"
 $LICENSE_LINE
 
-  def install
-$INSTALL_STANZA
-  end
+$BINARY_STANZA
 
   test do
 $TEST_STANZA
@@ -264,14 +209,13 @@ echo -e "${BLUE}Repository:${NC}  $OWNER/$REPO"
 echo ""
 echo -e "${YELLOW}Next steps:${NC}"
 echo "  1. Review and customize the cask: $CASK_PATH"
-echo "  2. Adjust the install block based on the actual asset structure"
-echo "  3. Test the installation paths and binary names"
+echo "  2. Adjust the binary name based on actual archive contents"
+echo "  3. Extract the archive to find the actual binary name"
 echo "  4. Test the cask: brew install --cask $CASK_PATH"
 echo "  5. Commit the cask: git add $CASK_PATH && git commit"
 echo ""
-echo -e "${YELLOW}Note:${NC} The generated cask includes a basic install block for $ASSET_TYPE."
-echo "      You will likely need to customize the install block based on:"
-echo "      - Actual binary names in the archive"
-echo "      - Required installation paths (bin/, lib/, share/)"
-echo "      - Any post-installation steps needed"
+echo -e "${YELLOW}Note:${NC} The generated cask uses the Homebrew Cask DSL with a 'binary' stanza."
+echo "      You MUST customize the binary name to match the actual binary in the archive."
+echo "      Extract $ASSET_NAME to find the correct binary path."
+echo "      Example: binary \"path/to/actual-binary-name\""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
