@@ -1,17 +1,15 @@
 # Personal Homebrew Tap for Linux
 
-**⚠️ LINUX ONLY** - This tap provides Linux-specific packages for **immutable/read-only filesystem distributions** (Fedora Silverblue, Universal Blue, etc.). All packages install to user home directories following XDG Base Directory Specification.
-
 Automated Homebrew tap with intelligent package generation, quality gates, and AI agent support.
 
 ## Features
 
-- **🚀 Fast Package Generation**: Go CLI tools generate packages from GitHub releases (4-5x faster than bash)
-- **🔄 Automated Updates**: Renovate checks every 3 hours with automatic SHA256 verification
-- **✅ Quality Gates**: All packages pass `brew audit --strict` and `brew style`
-- **📦 Formulas & Casks**: CLI tools and GUI applications with desktop integration
-- **🤖 AI Agent Support**: Comprehensive documentation for Copilot and other coding agents
-- **🏠 XDG Compliant**: All installations respect user home directory structure
+- **Fast Package Generation**: Go CLI tools generate packages from GitHub releases (4-5x faster than bash)
+- **Automated Updates**: Renovate checks every 3 hours with automatic SHA256 verification
+- **Quality Gates**: All packages pass `brew audit --strict` and `brew style`
+- **Formulas & Casks**: CLI tools and GUI applications with desktop integration
+- **AI Agent Support**: Comprehensive documentation for Copilot and other coding agents
+- **XDG Compliant**: All installations respect user home directory structure
 
 ## Installation
 
@@ -83,19 +81,8 @@ Package names are automatically derived from repository names (e.g., `user/my-ap
 - ✅ Calculates and verifies SHA256 checksums
 - ✅ Detects desktop integration needs (.desktop files, icons)
 - ✅ Ensures XDG Base Directory Spec compliance
-- ✅ 4-5x faster than bash scripts
 
 See [tap-tools/README.md](tap-tools/README.md) for detailed documentation.
-
-### Legacy Bash Scripts (Deprecated)
-
-```bash
-# Still functional but slower - prefer Go tools above
-./scripts/new-formula.sh package-name https://github.com/user/repo
-./scripts/new-cask.sh app-name https://github.com/user/repo
-./scripts/from-issue.sh 42
-./scripts/validate-all.sh
-```
 
 ### Documentation
 
@@ -117,13 +104,13 @@ See [tap-tools/README.md](tap-tools/README.md) for detailed documentation.
 
 **All packages MUST:**
 - ✅ Use Linux binaries ONLY (never macOS `.dmg`/`.pkg` or Windows `.exe`/`.msi`)
-- ✅ Install to user home directory (NEVER to `/usr/`, `/opt/`, `/etc/`)
+- ✅ Install to user home directory (NEVER to `/usr/`, `/opt/`)
 - ✅ Use XDG environment variables (`$XDG_DATA_HOME`, `$XDG_CONFIG_HOME`, `$XDG_CACHE_HOME`)
 - ✅ Include desktop integration for GUI apps (`.desktop` file + icon)
 - ✅ Include SHA256 verification (MANDATORY)
 - ✅ Use `-linux` suffix for cask names (e.g., `app-name-linux`)
 
-**Why:** Target systems use immutable/read-only root filesystems (Fedora Silverblue, Universal Blue) where `/usr/`, `/opt/`, and `/etc/` are read-only.
+**Why:** Target systems use read-only root filesystems (Fedora Silverblue, Universal Blue) where `/usr/` and `/opt/`, are read-only.
 
 ### Package Format Priority
 
