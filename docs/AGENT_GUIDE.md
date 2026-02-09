@@ -5,6 +5,7 @@ This guide enables AI agents to independently package software for Homebrew. Fol
 ## Table of Contents
 
 1. [Overview](#overview)
+   - [Package Naming Convention](#package-naming-convention) **← CRITICAL**
 2. [Quick Start](#quick-start)
 3. [Workflow Decision Tree](#workflow-decision-tree)
 4. [Helper Scripts](#helper-scripts)
@@ -42,6 +43,34 @@ Before starting, ensure:
 - `jq` is installed for JSON parsing
 - Git repository with proper remote configured
 - Write access to create branches and PRs
+
+### Package Naming Convention
+
+**CRITICAL: Package names are ALWAYS derived from the repository name, not manually specified.**
+
+**Naming Rules:**
+1. Use the repository name as-is (e.g., `ripgrep` repo → `ripgrep` package)
+2. Convert to lowercase (e.g., `MyApp` → `myapp`)
+3. Replace underscores with hyphens (e.g., `my_tool` → `my-tool`)
+4. **Never override the repository name** - this ensures consistency with upstream
+
+**Why This Matters:**
+- Ensures package names match what users expect
+- Maintains consistency with upstream project naming
+- Prevents naming conflicts and confusion
+- Makes updates predictable (Renovate can track by repo name)
+
+**Examples:**
+- Repository: `BurntSushi/ripgrep` → Package: `ripgrep`
+- Repository: `sharkdp/bat` → Package: `bat`
+- Repository: `user/My_Cool_App` → Package: `my-cool-app`
+
+**Issue Template:**
+The issue template only requires:
+- Repository URL (package name derived automatically)
+- Description
+
+**No "Package Name" field** - the name comes from the repository itself.
 
 ---
 
@@ -159,31 +188,31 @@ If auto-detection fails, manually specify:
 
 **What It Does:**
 1. Fetches issue #N from GitHub
-2. Parses issue body (package name, repo URL, description)
-3. Auto-detects formula vs cask
-4. Creates branch `package-request-N-package-name`
-5. Calls `new-formula.sh` or `new-cask.sh`
-6. Commits with message: `feat: add package-name formula (closes #N)`
-7. Pushes to remote
-8. (Optional) Creates PR and comments on issue
+2. Parses issue body (repo URL, description)
+3. **Derives package name from repository name** (e.g., `ripgrep` repo → `ripgrep` package)
+4. Auto-detects formula vs cask based on repository metadata
+5. Creates branch `package-request-N-package-name`
+6. Calls `new-formula.sh` or `new-cask.sh`
+7. Commits with message: `feat: add package-name formula (closes #N)`
+8. Pushes to remote
+9. (Optional) Creates PR and comments on issue
 
 **Issue Template Format:**
 
 The script expects issues to follow this format:
 
 ```markdown
-### Package Name
-my-package
-
-### Repository URL
+### Repository or Homepage URL
 https://github.com/user/my-package
 
 ### Description
 A brief description of the package
 
-### Package Type
+### Package Type (optional)
 formula
 ```
+
+**IMPORTANT:** Package name is automatically derived from the repository name. Do not specify it manually.
 
 **Exit Codes:**
 - `0` - Success
@@ -1075,9 +1104,24 @@ gh auth login
 
 #### Naming
 
-- **Formulas**: Lowercase, hyphenated (e.g., `my-tool`, `foo-bar`)
-- **Casks**: Lowercase, hyphenated (e.g., `my-app`, `visual-studio-code`)
-- **Class names**: CamelCase from filename (e.g., `MyTool`, `FooBar`)
+**CRITICAL: Package names are derived from repository names, not manually specified.**
+
+- **Rule**: Use the repository name (lowercase, underscores→hyphens)
+  ```
+  Repository: BurntSushi/ripgrep → Package: ripgrep
+  Repository: sharkdp/bat → Package: bat  
+  Repository: user/My_Tool → Package: my-tool
+  ```
+
+- **Never override** the repository name manually
+- **Class names**: CamelCase from filename (e.g., `MyTool` from `my-tool.rb`)
+- **Formulas/Casks**: Both use lowercase, hyphenated names
+
+**Why This Matters:**
+- Ensures consistency with upstream project naming
+- Makes Renovate updates predictable (tracks by repo name)
+- Prevents naming conflicts
+- Matches user expectations
 
 #### Metadata
 

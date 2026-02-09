@@ -8,12 +8,13 @@
 #
 # This script:
 # 1. Fetches GitHub issue details
-# 2. Extracts package name, URL, and description
-# 3. Detects if it should be a formula (CLI) or cask (GUI)
-# 4. Creates a git branch
-# 5. Calls the appropriate helper script
-# 6. Commits the generated formula/cask
-# 7. Optionally creates a PR and comments on the issue
+# 2. Extracts repository URL and description
+# 3. Derives package name from the repository name
+# 4. Detects if it should be a formula (CLI) or cask (GUI)
+# 5. Creates a git branch
+# 6. Calls the appropriate helper script
+# 7. Commits the generated formula/cask
+# 8. Optionally creates a PR and comments on the issue
 
 set -euo pipefail
 
@@ -145,26 +146,18 @@ section "Parsing Issue Template"
 
 # Parse issue body for required fields
 # Expected format (from issue template):
-# ### Package Name
-# my-package
-#
-# ### Repository URL
+# ### Repository or Homepage URL
 # https://github.com/owner/repo
 #
 # ### Description
 # A description of the package
-
-# Extract Package Name
-PACKAGE_NAME=$(echo "$ISSUE_BODY" | sed -n '/###.*[Pp]ackage [Nn]ame/,/###/p' | sed '1d;$d' | grep -v '^$' | head -n1 | xargs)
-if [ -z "$PACKAGE_NAME" ]; then
-    error "Could not find 'Package Name' in issue body. Please ensure the issue follows the template."
-fi
-success "Package Name: $PACKAGE_NAME"
+#
+# NOTE: Package name is derived from the repository name
 
 # Extract Repository URL
-REPO_URL=$(echo "$ISSUE_BODY" | sed -n '/###.*[Rr]epository [Uu][Rr][Ll]/,/###/p' | sed '1d;$d' | grep -v '^$' | head -n1 | xargs)
+REPO_URL=$(echo "$ISSUE_BODY" | sed -n '/###.*\([Rr]epository\|[Uu][Rr][Ll]\|[Hh]omepage\)/,/###/p' | sed '1d;$d' | grep -v '^$' | head -n1 | xargs)
 if [ -z "$REPO_URL" ]; then
-    error "Could not find 'Repository URL' in issue body. Please ensure the issue follows the template."
+    error "Could not find 'Repository URL' or 'Homepage URL' in issue body. Please ensure the issue follows the template."
 fi
 success "Repository URL: $REPO_URL"
 
@@ -172,6 +165,18 @@ success "Repository URL: $REPO_URL"
 if ! [[ "$REPO_URL" =~ github\.com ]]; then
     error "Repository URL must be a GitHub URL: $REPO_URL"
 fi
+
+# Extract owner and repo from URL to derive package name
+if [[ "$REPO_URL" =~ github\.com[:/]([^/]+)/([^/\.]+) ]]; then
+    PKG_OWNER="${BASH_REMATCH[1]}"
+    PKG_REPO="${BASH_REMATCH[2]}"
+else
+    error "Invalid GitHub URL format: $REPO_URL"
+fi
+
+# Derive package name from repository name (normalize to lowercase, replace underscores with hyphens)
+PACKAGE_NAME=$(echo "$PKG_REPO" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+success "Package Name (derived from repo): $PACKAGE_NAME"
 
 # Extract Description (optional, can be empty)
 DESCRIPTION=$(echo "$ISSUE_BODY" | sed -n '/###.*[Dd]escription/,/###/p' | sed '1d;$d' | grep -v '^$' | head -n1 | xargs)
@@ -212,15 +217,7 @@ fi
 if [ -z "$DETECTED_TYPE" ]; then
     info "Auto-detecting package type from repository metadata..."
     
-    # Extract owner and repo from URL
-    if [[ "$REPO_URL" =~ github\.com[:/]([^/]+)/([^/\.]+) ]]; then
-        PKG_OWNER="${BASH_REMATCH[1]}"
-        PKG_REPO="${BASH_REMATCH[2]}"
-    else
-        error "Invalid GitHub URL format: $REPO_URL"
-    fi
-    
-    # Fetch repository metadata
+    # Fetch repository metadata (we already have PKG_OWNER and PKG_REPO from earlier)
     PKG_DATA=$(gh api "repos/$PKG_OWNER/$PKG_REPO" 2>/dev/null) || error "Failed to fetch repository metadata for $REPO_URL"
     
     TOPICS=$(echo "$PKG_DATA" | jq -r '.topics[]?' 2>/dev/null || echo "")
