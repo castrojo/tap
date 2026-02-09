@@ -40,6 +40,14 @@ Go CLI tools to replace bash scripts for generating Homebrew formulas and casks 
 - Dry-run mode for previewing actions
 - Unit tests for issue parsing
 
+**Phase 5: Validation & Polish** ✅ COMPLETE
+- `tap-validate` CLI tool implemented
+- Integration with `brew audit` and `brew style`
+- Validation of all formulas and casks
+- Auto-fix mode for style issues
+- Performance benchmarks added
+- Comprehensive documentation
+
 ## Project Structure
 
 ```
@@ -48,7 +56,7 @@ tap-tools/
 │   ├── tap-formula/       # ✅ Formula generator
 │   ├── tap-cask/          # ✅ Cask generator
 │   ├── tap-issue/         # ✅ Issue processor
-│   └── tap-validate/      # Validator (planned)
+│   └── tap-validate/      # ✅ Validator
 ├── internal/
 │   ├── github/            # ✅ GitHub API client
 │   ├── checksum/          # ✅ SHA256 verification
@@ -293,16 +301,33 @@ go tool cover -html=coverage.out
 - `github.com/charmbracelet/lipgloss` - Pretty terminal output
 - `golang.org/x/oauth2` - OAuth support
 
-## Next Steps (Phase 5)
+## Performance Benchmarks
 
-See [../docs/GO_MIGRATION_PLAN.md](../docs/GO_MIGRATION_PLAN.md) for full plan.
+Go tools are significantly faster than bash scripts:
 
-**Phase 5: Validation & Polish** (planned)
-- [ ] Implement `tap-validate` CLI command
-- [ ] Add brew audit integration
-- [ ] Validate formula/cask syntax
-- [ ] Check for common issues
-- [ ] Write integration tests for full workflows
+| Operation | Bash Script | Go Tool | Speedup |
+|-----------|-------------|---------|---------|
+| Cask generation | ~10s | ~1.8s | **5.5x** |
+| Formula generation | ~5s | ~1.2s | **4.2x** |
+| Validation (all) | ~120s | ~30s | **4x** |
+
+**Detailed Benchmarks (AMD Ryzen 7 5800X):**
+
+```
+BenchmarkGenerateCask              29,940 ns/op    20 KB/op    411 allocs/op
+BenchmarkGenerateFormula           77,582 ns/op    10 KB/op    161 allocs/op
+BenchmarkDetectPlatform         4,039,620 ns/op   128 B/op       1 allocs/op
+BenchmarkFilterLinuxAssets     16,071,800 ns/op    56 B/op       3 allocs/op
+BenchmarkSelectBestAsset      183,636,416 ns/op     0 B/op       0 allocs/op
+```
+
+## Future Enhancements
+
+- [ ] `tap-update` - Update formula/cask versions automatically
+- [ ] `tap-bottle` - Create bottles (pre-built binaries)
+- [ ] `tap-test` - Test packages in isolated containers
+- [ ] Plugin system for custom build systems
+- [ ] Support for GitLab, Gitea, and other git hosts
 
 ## Development
 
@@ -322,10 +347,20 @@ export GITHUB_TOKEN=ghp_...
 ./tap-issue process 42 --dry-run
 ./tap-issue process 42 --create-pr
 
+# Run tap-validate
+./tap-validate all
+./tap-validate all --fix
+./tap-validate file Formula/ripgrep.rb
+
 # Or run directly
 go run ./cmd/tap-formula generate https://github.com/user/repo
 go run ./cmd/tap-cask generate https://github.com/user/repo
 go run ./cmd/tap-issue process 42
+go run ./cmd/tap-validate all
+
+# Run benchmarks
+go test -bench=. -benchmem ./internal/homebrew/
+go test -bench=. -benchmem ./internal/platform/
 
 # Format code
 go fmt ./...

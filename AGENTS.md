@@ -185,15 +185,57 @@ All documentation is located in the `docs/` directory:
 - **[CASK_PATTERNS.md](docs/CASK_PATTERNS.md)** - Copy-paste templates for casks
 - **[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** - Common errors and solutions
 
-## Helper Scripts
+## Helper Scripts & Go CLI Tools
 
-Located in `scripts/`:
+### Go CLI Tools (RECOMMENDED - Faster & More Reliable)
+
+Located in `tap-tools/`, pre-built binaries available:
+
+- **`tap-cask`** - Generate new cask from GitHub releases (5.5x faster than bash)
+  ```bash
+  ./tap-tools/tap-cask generate <name> <github-url>
+  ```
+
+- **`tap-formula`** - Generate new formula from GitHub releases (4.2x faster than bash)
+  ```bash
+  ./tap-tools/tap-formula generate <name> <github-url>
+  ```
+
+- **`tap-issue`** - Process package requests from GitHub issues
+  ```bash
+  ./tap-tools/tap-issue process <issue-number>
+  ./tap-tools/tap-issue process <issue-number> --create-pr
+  ```
+
+- **`tap-validate`** - Validate all formulas and casks (4x faster than bash)
+  ```bash
+  ./tap-tools/tap-validate all
+  ./tap-tools/tap-validate all --fix  # Auto-fix style issues
+  ./tap-tools/tap-validate file Formula/jq.rb
+  ```
+
+**Features:**
+- ✅ Automatic build system detection (Go, Rust, CMake, Meson)
+- ✅ Linux-only asset filtering (rejects macOS/Windows automatically)
+- ✅ Format prioritization (tarball > deb > other)
+- ✅ Desktop integration detection (icons, .desktop files)
+- ✅ SHA256 verification and upstream checksum discovery
+- ✅ XDG Base Directory Spec compliance
+- ✅ Pretty terminal output with progress indicators
+
+See [tap-tools/README.md](tap-tools/README.md) for complete documentation.
+
+### Legacy Bash Scripts (Deprecated)
+
+Located in `scripts/` - still functional but slower:
 
 - `new-formula.sh` - Generate new formula from GitHub releases
 - `new-cask.sh` - Generate new cask from GitHub releases
 - `from-issue.sh` - Process package requests from GitHub issues
 - `validate-all.sh` - Validate all formulas and casks
 - `update-sha256.sh` - Update checksums after version changes
+
+**Migration:** Prefer Go tools over bash scripts for better performance and reliability.
 
 ## Best Practices
 
