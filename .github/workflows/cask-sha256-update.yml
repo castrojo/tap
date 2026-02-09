@@ -1,0 +1,162 @@
+name: Update SHA256 for Cask Updates
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - 'Casks/**'
+
+jobs:
+  update-sha256:
+    # Only run on Renovate PRs for casks
+    if: |
+      github.actor == 'renovate[bot]' &&
+      contains(github.event.pull_request.labels.*.name, 'cask-update')
+    
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+      
+      - name: Detect changed casks
+        id: changes
+        run: |
+          git fetch origin main
+          CHANGED_CASKS=$(git diff --name-only origin/main...HEAD | grep '^Casks/.*\.rb$' || true)
+          echo "casks<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED_CASKS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "Changed casks: $CHANGED_CASKS"
+      
+      - name: Update SHA256 for changed casks
+        if: steps.changes.outputs.casks != ''
+        run: |
+          # Process each changed cask file
+          while IFS= read -r cask_file; do
+            [ -z "$cask_file" ] && continue
+            
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "Processing: $cask_file"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            
+            # Extract version from cask
+            VERSION=$(ruby -e "
+              content = File.read('$cask_file')
+              if content =~ /^\s*version\s+[\"']([^\"']+)[\"']/
+                puts \$1
+              end
+            ")
+            
+            if [ -z "$VERSION" ]; then
+              echo "❌ Could not extract version from $cask_file"
+              continue
+            fi
+            
+            echo "Version: $VERSION"
+            
+            # Extract URL template from cask
+            URL_TEMPLATE=$(ruby -e "
+              content = File.read('$cask_file')
+              if content =~ /^\s*url\s+[\"']([^\"']+)[\"']/
+                puts \$1
+              end
+            ")
+            
+            if [ -z "$URL_TEMPLATE" ]; then
+              echo "❌ Could not extract URL from $cask_file"
+              continue
+            fi
+            
+            # Replace #{version} placeholder with actual version
+            URL=$(echo "$URL_TEMPLATE" | sed "s/#{version}/$VERSION/g")
+            
+            echo "URL: $URL"
+            
+            # Download tarball
+            echo "Downloading tarball..."
+            if ! curl -sSL --fail "$URL" -o /tmp/download.tar.gz; then
+              echo "❌ Failed to download from $URL"
+              continue
+            fi
+            
+            # Calculate SHA256
+            NEW_SHA256=$(sha256sum /tmp/download.tar.gz | awk '{print $1}')
+            echo "Calculated SHA256: $NEW_SHA256"
+            
+            # Get current SHA256
+            CURRENT_SHA256=$(ruby -e "
+              content = File.read('$cask_file')
+              if content =~ /^\s*sha256\s+[\"']([a-f0-9]{64})[\"']/
+                puts \$1
+              end
+            ")
+            
+            echo "Current SHA256: $CURRENT_SHA256"
+            
+            if [ "$NEW_SHA256" = "$CURRENT_SHA256" ]; then
+              echo "✅ SHA256 already correct, no update needed"
+            else
+              # Update SHA256 in cask file
+              ruby -i -pe "
+                if /^\s*sha256\s+[\"'][a-f0-9]{64}[\"']/
+                  gsub(/[a-f0-9]{64}/, '$NEW_SHA256')
+                end
+              " "$cask_file"
+              
+              echo "✅ Updated SHA256 in $cask_file"
+            fi
+            
+            rm -f /tmp/download.tar.gz
+            echo ""
+          done <<< "${{ steps.changes.outputs.casks }}"
+      
+      - name: Commit SHA256 updates
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          if git diff --quiet; then
+            echo "No SHA256 changes needed"
+            exit 0
+          fi
+          
+          git add -A
+          git commit -m "chore(cask): update SHA256 checksums" \
+                     -m "Automatically calculated SHA256 for cask version updates." \
+                     -m "Co-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>"
+          
+          git push
+          
+          echo "SHA256_UPDATED=true" >> $GITHUB_ENV
+      
+      - name: Comment on PR
+        if: env.SHA256_UPDATED == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const changedCasks = `${{ steps.changes.outputs.casks }}`.trim();
+            if (!changedCasks) return;
+            
+            const caskList = changedCasks.split('\n').filter(c => c.trim()).map(c => `- ${c}`).join('\n');
+            
+            const body = `✅ **SHA256 checksums automatically updated**\n\nUpdated casks:\n${caskList}\n\nCI will now verify the checksums and test installation.`;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });

@@ -15,21 +15,17 @@
   "groupName": "all dependencies",
   "groupSlug": "all",
   
-  // Configure regex managers for Homebrew formulas and casks
+  // Enable built-in Homebrew manager for formulas (supports SHA256 auto-update)
+  "homebrew": {
+    "enabled": true
+  },
+  
+  // Use regex manager only for casks (built-in manager doesn't support Casks/)
   "regexManagers": [
-    {
-      // Match Homebrew Formula files
-      // Standard order: url, version, sha256
-      "fileMatch": ["^Formula/.+\\.rb$"],
-      "matchStrings": [
-        "url\\s+[\"']https://github\\.com/(?<depName>[^/]+/[^/]+)/.*[\"']\\s*\\n\\s*version\\s+[\"'](?<currentValue>[^\"']+)[\"']\\s*\\n\\s*sha256\\s+[\"'](?<currentDigest>[^\"']+)[\"']"
-      ],
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.+)$"
-    },
     {
       // Match Homebrew Cask files  
       // Standard order: version, sha256, url
+      // Note: SHA256 will be updated by GitHub Actions workflow
       "fileMatch": ["^Casks/.+\\.rb$"],
       "matchStrings": [
         "version\\s+[\"'](?<currentValue>[^\"']+)[\"']\\s*\\n\\s*sha256\\s+[\"'](?<currentDigest>[^\"']+)[\"']\\s*\\n\\s*url\\s+[\"']https://github\\.com/(?<depName>[^/]+/[^/]+)/.*[\"']"
@@ -42,7 +38,8 @@
   // Package rules for different update types
   "packageRules": [
     {
-      // Auto-merge patch releases after 3 hours
+      // Formulas: Auto-merge patch releases (SHA256 handled by built-in manager)
+      "matchFileNames": ["Formula/**"],
       "matchUpdateTypes": ["patch"],
       "automerge": true,
       "automergeType": "pr",
@@ -51,7 +48,8 @@
       "schedule": ["at any time"]
     },
     {
-      // Auto-merge minor releases after 1 day
+      // Formulas: Auto-merge minor releases (SHA256 handled by built-in manager)
+      "matchFileNames": ["Formula/**"],
       "matchUpdateTypes": ["minor"],
       "automerge": true,
       "automergeType": "pr",
@@ -60,7 +58,29 @@
       "schedule": ["at any time"]
     },
     {
-      // Major releases require manual review
+      // Casks: Auto-merge patch releases (SHA256 updated by workflow)
+      "matchFileNames": ["Casks/**"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash",
+      "minimumReleaseAge": "3 hours",
+      "schedule": ["at any time"],
+      "labels": ["cask-update"]
+    },
+    {
+      // Casks: Auto-merge minor releases (SHA256 updated by workflow)
+      "matchFileNames": ["Casks/**"],
+      "matchUpdateTypes": ["minor"],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash",
+      "minimumReleaseAge": "1 day",
+      "schedule": ["at any time"],
+      "labels": ["cask-update"]
+    },
+    {
+      // Major releases require manual review (structure may have changed)
       "matchUpdateTypes": ["major"],
       "automerge": false,
       "schedule": ["at any time"],
