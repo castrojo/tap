@@ -168,11 +168,11 @@ BINARY_STANZA="  binary \"$CASK_NAME\""
 
 # Generate test stanza
 TEST_STANZA="    # Test that the binary exists and is executable
-    assert_predicate \"#{prefix}/$CASK_NAME\", :exist?
-    assert_predicate \"#{prefix}/$CASK_NAME\", :executable?
+    assert_predicate bin/\"$CASK_NAME\", :exist?
+    assert_predicate bin/\"$CASK_NAME\", :executable?
     
     # Try running with --version
-    system \"#{prefix}/$CASK_NAME\", \"--version\""
+    system bin/\"$CASK_NAME\", \"--version\""
 
 cat > "$CASK_PATH" << EOF
 cask "$CASK_NAME" do
