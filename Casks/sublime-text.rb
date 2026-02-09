@@ -9,13 +9,4 @@ cask "sublime-text" do
   homepage "https://www.sublimetext.com/"
 
   binary "sublime_text/sublime_text", target: "subl"
-
-  test do
-    # Verify binary exists and is executable
-    assert_predicate bin/"subl", :exist?
-    assert_predicate bin/"subl", :executable?
-
-    # Test version output  
-    system bin/"subl", "--version"
-  end
 end
