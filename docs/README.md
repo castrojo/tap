@@ -47,6 +47,13 @@ This directory contains all documentation for the homebrew-tap project, organize
 | [../tap-tools/README.md](../tap-tools/README.md) | Go CLI tools documentation | ✅ Complete |
 | [GO_MIGRATION_PLAN.md](GO_MIGRATION_PLAN.md) | Bash → Go migration strategy | 🟡 In Progress |
 
+### Infrastructure Documentation
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| [infrastructure/README.md](infrastructure/README.md) | Infrastructure issues index | ✅ Complete |
+| [infrastructure/GITHUB_TOKEN_SOLUTION_PLAN.md](infrastructure/GITHUB_TOKEN_SOLUTION_PLAN.md) | GitHub API rate limiting solution | 📋 Ready to Implement |
+
 ---
 
 ## Implementation Plans
@@ -129,6 +136,7 @@ Documented in [plans/2026-02-09-zero-error-packages-design.md](plans/2026-02-09-
 
 | Document | Purpose | Date |
 |----------|---------|------|
+| [observations/2026-02-09-copilot-pr-22-monitoring.md](observations/2026-02-09-copilot-pr-22-monitoring.md) | Monitoring Copilot PR #22 (Rancher Desktop) | 2026-02-09 |
 | [observations/pr-11-failure-analysis.md](observations/pr-11-failure-analysis.md) | Root cause analysis of Rancher Desktop PR | 2026-02-09 |
 | [observations/copilot-pr-11-monitoring.md](observations/copilot-pr-11-monitoring.md) | Monitoring Copilot's fix attempt | 2026-02-09 |
 | [observations/2026-02-09-brainstorming-session.md](observations/2026-02-09-brainstorming-session.md) | Skills evaluation brainstorm | 2026-02-09 |
