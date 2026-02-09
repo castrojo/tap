@@ -1,0 +1,15 @@
+formula:
+  - changed-files:
+    - any-glob-to-any-file: 'Formula/**'
+
+cask:
+  - changed-files:
+    - any-glob-to-any-file: 'Casks/**'
+
+documentation:
+  - changed-files:
+    - any-glob-to-any-file: 'docs/**'
+
+tooling:
+  - changed-files:
+    - any-glob-to-any-file: 'scripts/**'
