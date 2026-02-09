@@ -2,6 +2,17 @@
 
 This guide enables AI agents to independently package software for Homebrew. Follow these instructions to create formulas (CLI tools) and casks (GUI apps) with consistent quality.
 
+## ⚠️ MUST READ FIRST
+
+**Before creating ANY cask, read [CASK_CREATION_GUIDE.md](./CASK_CREATION_GUIDE.md) - it contains critical, up-to-date information that will prevent common failures.**
+
+**Critical Topics Covered:**
+- Why `depends_on :linux` FAILS (and what to use instead)
+- Why `test` blocks FAIL in casks (formulas only)
+- Correct stanza ordering and spacing
+- CI workflow requirements for tapping repositories
+- Verified minimal cask template that passes CI
+
 ## Table of Contents
 
 1. [Overview](#overview)
@@ -10,7 +21,7 @@ This guide enables AI agents to independently package software for Homebrew. Fol
 3. [Workflow Decision Tree](#workflow-decision-tree)
 4. [Helper Scripts](#helper-scripts)
 5. [Formula Creation Process](#formula-creation-process)
-6. [Cask Creation Process](#cask-creation-process)
+6. [Cask Creation Process](#cask-creation-process) **← Read CASK_CREATION_GUIDE.md first!**
 7. [Common Patterns](#common-patterns)
 8. [Quality Checks](#quality-checks)
 9. [Troubleshooting](#troubleshooting)
