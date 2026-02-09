@@ -413,8 +413,9 @@ func TestGenerateFormulaIntegration(t *testing.T) {
 		}
 
 		// Verify formula is valid Ruby syntax (basic check)
-		if !strings.HasPrefix(formula, "class") {
-			t.Error("Formula should start with 'class'")
+		// Check for class definition (may be preceded by header comments)
+		if !strings.Contains(formula, "class ") {
+			t.Error("Formula should contain 'class' definition")
 		}
 
 		if !strings.HasSuffix(strings.TrimSpace(formula), "end") {

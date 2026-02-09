@@ -7,6 +7,7 @@ import (
 	"text/template"
 
 	"github.com/castrojo/tap-tools/internal/buildsystem"
+	"github.com/castrojo/tap-tools/internal/generator"
 )
 
 // FormulaData represents data for generating a Homebrew formula
@@ -23,6 +24,7 @@ type FormulaData struct {
 	Dependencies []string // Formula dependencies
 	InstallBlock string   // Ruby code for install method
 	TestBlock    string   // Ruby code for test method
+	SourceURL    string   // Repository URL for regeneration instructions
 }
 
 // formulaTemplate is the template for generating Homebrew formulas
@@ -62,6 +64,15 @@ func GenerateFormula(data *FormulaData) (string, error) {
 	}
 
 	var buf bytes.Buffer
+
+	// Write generation header first
+	if data.SourceURL != "" {
+		if err := generator.WriteHeader(&buf, "tap-formula", data.SourceURL); err != nil {
+			return "", fmt.Errorf("failed to write header: %w", err)
+		}
+	}
+
+	// Then write formula content
 	if err := tmpl.Execute(&buf, data); err != nil {
 		return "", fmt.Errorf("failed to execute formula template: %w", err)
 	}

@@ -208,6 +208,7 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 				repository.License,
 				binaryName,
 			)
+			formulaData.SourceURL = fmt.Sprintf("https://github.com/%s/%s", owner, repo)
 
 			formula, err = homebrew.GenerateFormula(formulaData)
 			if err != nil {
@@ -230,6 +231,7 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 					repository.License,
 					binaryName,
 				)
+				formulaData.SourceURL = fmt.Sprintf("https://github.com/%s/%s", owner, repo)
 
 				formula, err = homebrew.GenerateFormula(formulaData)
 				if err != nil {
@@ -252,6 +254,7 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 				if err != nil {
 					return fmt.Errorf("failed to create formula data: %w", err)
 				}
+				formulaData.SourceURL = fmt.Sprintf("https://github.com/%s/%s", owner, repo)
 
 				formula, err = homebrew.GenerateFormula(formulaData)
 				if err != nil {
@@ -271,6 +274,7 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 			repository.License,
 			binaryName,
 		)
+		formulaData.SourceURL = fmt.Sprintf("https://github.com/%s/%s", owner, repo)
 
 		formula, err = homebrew.GenerateFormula(formulaData)
 		if err != nil {
