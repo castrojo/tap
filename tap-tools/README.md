@@ -50,6 +50,13 @@ Go CLI tools to replace bash scripts for generating Homebrew formulas and casks 
 - Performance benchmarks added
 - Comprehensive documentation
 
+**Phase 6: Smoke Testing** ✅ COMPLETE
+- `tap-test` CLI tool implemented
+- Formula smoke tests (binary execution verification)
+- Cask smoke tests (desktop integration, icon, binary verification)
+- Integration with CI workflow for automated testing
+- Retry logic for transient failures
+
 ## Project Structure
 
 ```
@@ -58,7 +65,8 @@ tap-tools/
 │   ├── tap-formula/       # ✅ Formula generator
 │   ├── tap-cask/          # ✅ Cask generator
 │   ├── tap-issue/         # ✅ Issue processor
-│   └── tap-validate/      # ✅ Validator
+│   ├── tap-validate/      # ✅ Validator
+│   └── tap-test/          # ✅ Smoke tester
 ├── internal/
 │   ├── github/            # ✅ GitHub API client
 │   ├── checksum/          # ✅ SHA256 verification
@@ -66,6 +74,7 @@ tap-tools/
 │   ├── homebrew/          # ✅ Formula & Cask generation
 │   ├── desktop/           # ✅ Desktop integration
 │   ├── buildsystem/       # ✅ Build system detection
+│   ├── validate/          # ✅ Validation package
 │   └── issues/            # ✅ Issue parsing & PR creation
 ├── pkg/
 │   └── templates/         # Embedded templates (planned)
@@ -331,7 +340,6 @@ BenchmarkSelectBestAsset      183,636,416 ns/op     0 B/op       0 allocs/op
 
 - [ ] `tap-update` - Update formula/cask versions automatically
 - [ ] `tap-bottle` - Create bottles (pre-built binaries)
-- [ ] `tap-test` - Test packages in isolated containers
 - [ ] Plugin system for custom build systems
 - [ ] Support for GitLab, Gitea, and other git hosts
 
@@ -358,11 +366,16 @@ export GITHUB_TOKEN=ghp_...
 ./tap-validate all --fix
 ./tap-validate file Formula/ripgrep.rb
 
+# Run tap-test (smoke tests for installed packages)
+./tap-test formula <formula-name>
+./tap-test cask <cask-name>
+
 # Or run directly
 go run ./cmd/tap-formula generate https://github.com/user/repo
 go run ./cmd/tap-cask generate https://github.com/user/repo
 go run ./cmd/tap-issue process 42
 go run ./cmd/tap-validate all
+go run ./cmd/tap-test formula ripgrep
 
 # Run benchmarks
 go test -bench=. -benchmem ./internal/homebrew/

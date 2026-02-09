@@ -1,0 +1,149 @@
+name: Test Package Installation
+
+on:
+  pull_request:
+    paths:
+      - 'Casks/**'
+      - 'Formula/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  
+jobs:
+  test-install:
+    runs-on: ubuntu-24.04
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@9ceb7934560eb61d131dde205a6c2d77b2e1529d # master
+
+      - name: Tap this repository
+        run: |
+          mkdir -p $(brew --repository)/Library/Taps/castrojo
+          ln -s $GITHUB_WORKSPACE $(brew --repository)/Library/Taps/castrojo/homebrew-tap
+
+      - name: Build tap-test tool
+        run: |
+          cd tap-tools
+          go build -o tap-test ./cmd/tap-test
+          chmod +x tap-test
+
+      - name: Detect changed packages
+        id: changed
+        run: |
+          git fetch origin main
+          CHANGED_FILES=$(git diff --name-only origin/main...HEAD | grep -E '^(Formula|Casks)/.*\.rb$' || true)
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "Changed files: $CHANGED_FILES"
+
+      - name: Test installation
+        if: steps.changed.outputs.files != ''
+        run: |
+          EXIT_CODE=0
+          
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            
+            PACKAGE=$(basename "$file" .rb)
+            echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "Testing: $PACKAGE (from $file)"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            
+            if [[ "$file" == Casks/* ]]; then
+              echo "Type: Cask"
+              
+              # Install with retry logic
+              ATTEMPT=1
+              MAX_ATTEMPTS=3
+              RETRY_DELAY=5
+              
+              while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+                echo "Attempt $ATTEMPT of $MAX_ATTEMPTS: Installing cask..."
+                
+                if brew install --cask "castrojo/tap/$PACKAGE" 2>&1 | tee /tmp/install.log; then
+                  echo "✓ Installation successful"
+                  
+                  # Run smoke tests
+                  if ./tap-tools/tap-test cask "$PACKAGE"; then
+                    echo "✓ Smoke tests passed"
+                  else
+                    echo "✗ Smoke tests failed"
+                    EXIT_CODE=1
+                  fi
+                  break
+                else
+                  if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
+                    echo "⚠ Installation failed, retrying in ${RETRY_DELAY}s..."
+                    sleep $RETRY_DELAY
+                    RETRY_DELAY=$((RETRY_DELAY * 2))
+                  else
+                    echo "✗ Installation failed after $MAX_ATTEMPTS attempts"
+                    cat /tmp/install.log
+                    EXIT_CODE=1
+                  fi
+                fi
+                
+                ATTEMPT=$((ATTEMPT + 1))
+              done
+              
+            elif [[ "$file" == Formula/* ]]; then
+              echo "Type: Formula"
+              
+              # Install with retry logic
+              ATTEMPT=1
+              MAX_ATTEMPTS=3
+              RETRY_DELAY=5
+              
+              while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+                echo "Attempt $ATTEMPT of $MAX_ATTEMPTS: Installing formula..."
+                
+                if brew install "castrojo/tap/$PACKAGE" 2>&1 | tee /tmp/install.log; then
+                  echo "✓ Installation successful"
+                  
+                  # Run smoke tests
+                  if ./tap-tools/tap-test formula "$PACKAGE"; then
+                    echo "✓ Smoke tests passed"
+                  else
+                    echo "✗ Smoke tests failed"
+                    EXIT_CODE=1
+                  fi
+                  break
+                else
+                  if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
+                    echo "⚠ Installation failed, retrying in ${RETRY_DELAY}s..."
+                    sleep $RETRY_DELAY
+                    RETRY_DELAY=$((RETRY_DELAY * 2))
+                  else
+                    echo "✗ Installation failed after $MAX_ATTEMPTS attempts"
+                    cat /tmp/install.log
+                    EXIT_CODE=1
+                  fi
+                fi
+                
+                ATTEMPT=$((ATTEMPT + 1))
+              done
+            fi
+            
+            echo ""
+          done <<< "${{ steps.changed.outputs.files }}"
+          
+          exit $EXIT_CODE
+
+      - name: Summary
+        if: always()
+        run: |
+          if [ "${{ steps.changed.outputs.files }}" = "" ]; then
+            echo "ℹ️ No packages to test (no Formula or Cask changes detected)"
+          else
+            echo "✅ Installation tests complete"
+          fi
