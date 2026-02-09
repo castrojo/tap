@@ -1,194 +1,308 @@
 # Copilot Instructions for homebrew-tap
 
-## ⚠️ CRITICAL: VALIDATION IS MANDATORY
+## 🚨 MANDATORY WORKFLOW - FOLLOW EVERY STEP
 
-**BEFORE EVERY COMMIT, YOU MUST RUN VALIDATION:**
+**THIS IS NOT OPTIONAL. CI WILL FAIL IF YOU SKIP ANY STEP.**
 
-```bash
-# For single file (REQUIRED after creating/editing)
-./tap-tools/tap-validate file Casks/your-cask-linux.rb --fix
-
-# For all files
-./tap-tools/tap-validate all --fix
-```
-
-**❌ NEVER commit without validation passing**  
-**❌ NEVER skip this step - it prevents CI failures**  
-**❌ NEVER use --no-verify to bypass pre-commit hooks**  
-
-**Expected output:**
-```
-✓ Style check passed
-```
-
-**If validation fails:**
-1. Review the error message
-2. The --fix flag auto-corrects most issues
-3. Re-run validation until passing
-4. **Only then commit**
+The generators (`tap-cask`, `tap-formula`) automatically validate the generated code. You DO NOT need to run validation manually unless you edit a file after generation.
 
 ---
 
-## Repository Overview
+## STEP 1: Environment Setup (RUN ONCE PER SESSION)
 
-This is a **Linux-only** Homebrew tap for packages unavailable or incompatible with the official Homebrew repositories. The tap targets **immutable/read-only filesystem distributions** (Fedora Silverblue, Universal Blue) where system directories like `/usr/`, `/opt/`, and `/etc/` are read-only.
+**Before doing ANYTHING else, verify your environment:**
 
-**Key Constraints:**
-- ALL packages MUST use Linux binaries only (never macOS or Windows)
-- ALL file installations MUST go to user home directory (`~/.local/`, `~/.config/`, `~/.cache/`)
-- NEVER install to system directories (`/usr/`, `/opt/`, `/etc/`)
-
-## Repository Structure
-
-```
-homebrew-tap/
-├── .github/
-│   ├── workflows/          # CI/CD automation
-│   ├── ISSUE_TEMPLATE/     # Package request template
-│   ├── renovate.json5      # Automatic version updates
-│   └── labeler.yml         # PR labeling
-├── Casks/                  # GUI applications (*.rb)
-├── Formula/                # CLI tools (*.rb)
-├── tap-tools/              # Go CLI tools (PREFERRED)
-│   ├── tap-cask           # Generate casks from GitHub releases
-│   ├── tap-formula        # Generate formulas from GitHub releases
-│   ├── tap-issue          # Process package requests from issues
-│   └── tap-validate       # Validate all packages
-├── scripts/                # Legacy bash scripts (deprecated)
-├── docs/
-│   ├── AGENT_GUIDE.md            # Comprehensive agent workflow
-│   ├── CASK_CREATION_GUIDE.md    # CRITICAL: Read before creating casks
-│   ├── FORMULA_PATTERNS.md       # Copy-paste formula templates
-│   ├── CASK_PATTERNS.md          # Copy-paste cask templates
-│   └── TROUBLESHOOTING.md        # Common errors and solutions
-└── AGENTS.md              # This file (agent instructions)
+```bash
+# Check if pre-commit hook is installed
+[ -f .git/hooks/pre-commit ] || ./scripts/setup-hooks.sh
 ```
 
-## Critical Documentation (READ FIRST)
+**Expected output:**
+```
+✓ Pre-commit hook installed
+```
 
-**BEFORE creating any package, you MUST read:**
-1. `docs/CASK_CREATION_GUIDE.md` - Contains critical rules that prevent CI failures
-2. `AGENTS.md` - Contains Linux-only requirements, XDG paths, and workflow
+**What this does:**
+- Installs a pre-commit hook that validates Ruby files before commit
+- The hook automatically runs `tap-validate --fix` on staged Ruby files
+- Blocks commits that fail validation
+- You only need to do this once per session
 
-**Key points from CASK_CREATION_GUIDE.md:**
-- ❌ NEVER use `depends_on :linux` (causes errors)
-- ❌ NEVER use `test do ... end` blocks in casks
-- ✅ ALWAYS use XDG environment variables for paths
-- ✅ ALWAYS include SHA256 verification
-- ✅ ALWAYS use `-linux` suffix for cask names
+---
 
-## Build, Test, and Validation Workflow
+## STEP 2: Creating a New Package
 
-### 1. Creating Packages (ALWAYS use tap-tools)
+### Option A: From a GitHub URL (Most Common)
 
-**For GUI applications (casks):**
+**FOR CASKS (GUI Applications):**
+
+```bash
+# Generate the cask (validation happens automatically)
+./tap-tools/tap-cask generate https://github.com/user/repo
+
+# ✅ WAIT FOR: "✓ Validation passed" or "✓ Validation passed (style issues auto-fixed)"
+# ❌ IF YOU SEE: "✗ Validation failed" - STOP! Read the error and fix it first.
+
+# Stage the generated file
+git add Casks/<name>-linux.rb
+
+# Commit (pre-commit hook will validate again automatically)
+git commit -m "feat(cask): add <name>-linux v<version>
+
+<one-line description>
+
+Assisted-by: Claude 3.5 Sonnet via GitHub Copilot"
+
+# Push to remote
+git push
+```
+
+**FOR FORMULAS (CLI Tools):**
+
+```bash
+# Generate the formula (validation happens automatically)
+./tap-tools/tap-formula generate https://github.com/user/repo
+
+# ✅ WAIT FOR: "✓ Validation passed"
+# ❌ IF YOU SEE: "✗ Validation failed" - STOP! Read the error and fix it first.
+
+# Stage the generated file
+git add Formula/<name>.rb
+
+# Commit (pre-commit hook will validate again automatically)
+git commit -m "feat(formula): add <name> v<version>
+
+<one-line description>
+
+Assisted-by: Claude 3.5 Sonnet via GitHub Copilot"
+
+# Push to remote
+git push
+```
+
+### Option B: From a GitHub Issue
+
+```bash
+# Process the issue (automatically calls tap-cask or tap-formula)
+./tap-tools/tap-issue process <issue-number>
+
+# ✅ WAIT FOR: "✓ Validation passed"
+# ❌ IF YOU SEE: "✗ Validation failed" - STOP! Read the error and fix it first.
+
+# The tool will tell you what file was created. Stage it:
+git add Casks/<name>-linux.rb  # or Formula/<name>.rb
+
+# Commit
+git commit -m "feat(cask): add <name>-linux v<version>
+
+Fixes #<issue-number>
+
+Assisted-by: Claude 3.5 Sonnet via GitHub Copilot"
+
+# Push
+git push
+```
+
+---
+
+## STEP 3: Verification Checklist
+
+**After running the generator, verify these outputs:**
+
+- [ ] You saw: `✓ Validation passed` or `✓ Validation passed (style issues auto-fixed)`
+- [ ] The generator did NOT show: `✗ Validation failed`
+- [ ] The file was created in `Casks/` or `Formula/`
+- [ ] The filename ends with `-linux.rb` (for casks only)
+
+**If ANY checkbox is unchecked, DO NOT COMMIT. Fix the issues first.**
+
+---
+
+## STEP 4: What If Something Goes Wrong?
+
+### Scenario 1: Generator says "Validation failed"
+
+**The generator already tried to auto-fix. This is rare and indicates a serious issue.**
+
+```bash
+# Look at the error message. Common issues:
+# - File not found (check the URL)
+# - No Linux assets found (package doesn't support Linux)
+# - Checksum mismatch (try again, might be transient)
+
+# If the file was created despite the error, try manual validation:
+./tap-tools/tap-validate file Casks/<name>-linux.rb --fix
+
+# Check the output:
+# ✅ "✓ Style check passed" - You can now commit
+# ❌ "✗ Validation failed" - Read the error and fix manually
+```
+
+### Scenario 2: Pre-commit hook blocks your commit
+
+**This means the file has validation issues. The hook already tried to auto-fix it.**
+
+```bash
+# The hook modified the file. You need to re-stage it:
+git add Casks/<name>-linux.rb
+
+# Now try committing again:
+git commit -m "..."
+
+# The hook will run again and should pass this time
+```
+
+### Scenario 3: You want to edit a generated file
+
+**Generally, don't do this. Re-generate instead. But if you must:**
+
+```bash
+# Edit the file
+vim Casks/<name>-linux.rb
+
+# Run validation manually:
+./tap-tools/tap-validate file Casks/<name>-linux.rb --fix
+
+# ✅ Wait for: "✓ Style check passed"
+# ❌ If failed: Read the error, fix, and validate again
+
+# Stage and commit:
+git add Casks/<name>-linux.rb
+git commit -m "..."
+```
+
+### Scenario 4: CI fails after pushing
+
+**This should NEVER happen if you followed the workflow. But if it does:**
+
+1. Look at the GitHub Actions logs
+2. Identify the error (usually style issues)
+3. Fix locally:
+   ```bash
+   ./tap-tools/tap-validate file <file> --fix
+   git add <file>
+   git commit -m "style: fix validation issues"
+   git push
+   ```
+
+---
+
+## STEP 5: Understanding This Repository
+
+### Key Constraints (MEMORIZE THESE)
+
+**This is a Linux-only tap:**
+- ✅ Use Linux binaries ONLY (`linux`, `amd64`, `x86_64`, `.tar.gz`, `.deb`)
+- ❌ NEVER use macOS binaries (`.dmg`, `.pkg`, `darwin`, `macos`)
+- ❌ NEVER use Windows binaries (`.exe`, `.msi`, `windows`, `win64`)
+
+**This tap targets read-only filesystems:**
+- ✅ Install to `~/.local/share/`, `~/.local/bin/`, `~/.config/`, `~/.cache/`
+- ❌ NEVER install to `/usr/`, `/opt/`, `/etc/` (filesystem is read-only!)
+
+**Naming requirements:**
+- ✅ Casks MUST end with `-linux` (e.g., `sublime-text-linux`)
+- ✅ Formulas do NOT need `-linux` suffix
+
+### Critical Rules (BREAKING THESE CAUSES CI FAILURES)
+
+**NEVER do these things:**
+- ❌ `depends_on :linux` (causes "wrong number of arguments" error)
+- ❌ `test do ... end` blocks in casks (causes "wrong number of arguments" error)
+- ❌ Hardcoded paths like `"#{Dir.home}/.local/share"` (use XDG variables instead)
+- ❌ `--no-verify` flag when committing (bypasses validation)
+- ❌ Manual cask writing (always use generators)
+
+**ALWAYS do these things:**
+- ✅ Use generators (`tap-cask`, `tap-formula`) to create packages
+- ✅ Wait for "✓ Validation passed" before committing
+- ✅ Use XDG environment variables: `ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")`
+- ✅ Include SHA256 verification (generators do this automatically)
+
+---
+
+## STEP 6: Tools Reference
+
+### tap-cask - Generate casks for GUI applications
+
 ```bash
 ./tap-tools/tap-cask generate https://github.com/user/repo
+./tap-tools/tap-cask generate user/repo
+./tap-tools/tap-cask generate https://github.com/user/repo --name custom-name
 ```
 
-**For CLI tools (formulas):**
+**What it does automatically:**
+- ✅ Fetches latest release from GitHub
+- ✅ Selects Linux-only assets (rejects macOS/Windows)
+- ✅ Prioritizes formats: tarball > deb > other
+- ✅ Downloads and calculates SHA256
+- ✅ Detects binaries, desktop files, and icons
+- ✅ Generates cask with proper XDG paths
+- ✅ **Validates with --fix automatically**
+- ✅ Ensures `-linux` suffix in cask name
+
+**Output file:** `Casks/<name>-linux.rb`
+
+### tap-formula - Generate formulas for CLI tools
+
 ```bash
 ./tap-tools/tap-formula generate https://github.com/user/repo
+./tap-tools/tap-formula generate user/repo
 ```
 
-**From GitHub issues:**
+**What it does automatically:**
+- ✅ Fetches latest release from GitHub
+- ✅ Selects Linux-only assets
+- ✅ Detects build system (Go, Rust, CMake, Meson, Make)
+- ✅ Generates proper build instructions
+- ✅ **Validates with --fix automatically**
+
+**Output file:** `Formula/<name>.rb`
+
+### tap-issue - Process package requests from issues
+
 ```bash
 ./tap-tools/tap-issue process <issue-number>
 ./tap-tools/tap-issue process <issue-number> --create-pr
 ```
 
-**Benefits of tap-tools:**
-- Automatically selects Linux-only assets (rejects macOS/Windows)
-- Prioritizes formats: tarball > deb > other
-- Calculates and verifies SHA256 checksums
-- Detects desktop integration needs
-- 4-5x faster than bash scripts
-- Ensures XDG compliance
+**What it does automatically:**
+- ✅ Reads the GitHub issue
+- ✅ Determines if it's a cask or formula request
+- ✅ Calls `tap-cask` or `tap-formula`
+- ✅ **Validation is handled by the generators**
+- ✅ Optionally creates a PR with `--create-pr`
 
-### 2. Validation (MANDATORY - NEVER SKIP)
-
-**YOU MUST validate IMMEDIATELY after creating or editing ANY Ruby file:**
+### tap-validate - Manual validation (rarely needed)
 
 ```bash
-# After generating or editing - REQUIRED
-./tap-tools/tap-validate file Casks/app-name-linux.rb --fix
+# Validate a single file
+./tap-tools/tap-validate file Casks/<name>-linux.rb --fix
+
+# Validate all files in repository
+./tap-tools/tap-validate all --fix
 ```
 
-**CRITICAL RULES:**
-- ❌ **NEVER commit without validation passing**
-- ❌ **NEVER skip validation "just this once"**
-- ❌ **NEVER use --no-verify to bypass pre-commit hooks**
-- ✅ **ALWAYS run validation with --fix flag**
-- ✅ **ALWAYS re-validate after making manual edits**
-- ✅ **ALWAYS check that output shows `✓ Style check passed`**
+**When to use:**
+- When generator validation fails (to debug)
+- After manually editing a file (not recommended)
+- To verify CI will pass before pushing
 
-**Validation catches:**
-- Line length violations (max 118 chars)
-- Array ordering issues (must be alphabetical)
-- Hardcoded paths (must use XDG environment variables)
-- Stanza spacing and ordering issues
-- All RuboCop violations
+**What it does:**
+- ✅ Runs `brew style` with RuboCop
+- ✅ Auto-fixes most issues with `--fix`
+- ✅ Returns clear success/failure messages
 
-**Expected output:**
-```
-→ Validating app-name-linux...
-✓ Style check passed
-```
+---
 
-**If validation fails, the --fix flag will auto-correct most issues. Re-stage the file and validate again until passing.**
-
-### 2a. Complete Workflow: Generate → Validate → Commit → Push
-
-**The complete command sequence for agents:**
-
-```bash
-# Step 1: Generate package
-./tap-tools/tap-cask generate https://github.com/user/repo
-
-# Step 2: Validate (MANDATORY - auto-fixes issues)
-./tap-tools/tap-validate file Casks/package-name-linux.rb --fix
-
-# Step 3: Stage the file (re-stage if auto-fixed)
-git add Casks/package-name-linux.rb
-
-# Step 4: Commit with conventional format
-git commit -m "feat(cask): add package-name-linux
-
-Short description of the package.
-
-Assisted-by: <Model> via <Tool>"
-
-# Step 5: Push to remote
-git push
-```
-
-**Why this sequence works:**
-- `tap-validate --fix` auto-corrects style issues and modifies the file
-- You MUST `git add` again after validation (file was changed)
-- Pre-commit hook will re-validate automatically on commit
-- If pre-commit hook fails, fix and commit again (don't use --no-verify)
-
-### 3. Testing Installation (Optional but recommended)
-
-```bash
-# Install cask
-brew install --cask castrojo/tap/app-name-linux
-
-# Install formula
-brew install castrojo/tap/tool-name
-
-# Uninstall
-brew uninstall --cask app-name-linux  # or tool-name
-```
-
-### 4. Commit Format (MANDATORY)
+## STEP 7: Commit Format (MANDATORY)
 
 Use **Conventional Commits** with AI attribution:
 
 ```
-<type>[optional scope]: <description>
+<type>(<scope>): <description>
 
-[optional body]
+<optional body>
 
 Assisted-by: <Model> via <Tool>
 ```
@@ -196,8 +310,9 @@ Assisted-by: <Model> via <Tool>
 **Types:** `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `ci`
 
 **Examples:**
+
 ```
-feat(cask): add rancher-desktop-linux v1.15.0
+feat(cask): add rancher-desktop-linux v1.22.0
 
 Adds Rancher Desktop with desktop integration and XDG paths.
 
@@ -205,183 +320,160 @@ Assisted-by: Claude 3.5 Sonnet via GitHub Copilot
 ```
 
 ```
-fix(formula): correct jq binary installation path
+feat(formula): add jq v1.7.1
 
-Assisted-by: GPT-4 via GitHub Copilot
+JSON command-line processor.
+
+Assisted-by: Claude 3.5 Sonnet via GitHub Copilot
 ```
 
-### 5. Pull Request Workflow (REQUIRED for major work)
+```
+fix(cask): correct sublime-text-linux binary path
 
-**ALL major features/epics MUST use pull requests, NOT direct commits to main.**
+Assisted-by: Claude 3.5 Sonnet via GitHub Copilot
+```
+
+---
+
+## STEP 8: Pull Requests (For Major Work)
+
+**All major features MUST use pull requests, NOT direct commits to main.**
 
 ```bash
 # Create feature branch
-git checkout -b feature/add-rancher-desktop
+git checkout -b feat/add-new-package
 
-# Make changes, validate, commit
-./tap-tools/tap-cask generate https://github.com/rancher-sandbox/rancher-desktop
-./tap-tools/tap-validate file Casks/rancher-desktop-linux.rb --fix
-git add Casks/rancher-desktop-linux.rb
-git commit -m "feat(cask): add rancher-desktop-linux v1.15.0
+# Generate and commit package (follow STEP 2)
+./tap-tools/tap-cask generate https://github.com/user/repo
+git add Casks/<name>-linux.rb
+git commit -m "feat(cask): add <name>-linux v<version>
 
-Adds Rancher Desktop with desktop integration and XDG paths.
+<description>
 
 Assisted-by: Claude 3.5 Sonnet via GitHub Copilot"
 
 # Push and create PR
-git push -u origin feature/add-rancher-desktop
-gh pr create --title "feat(cask): add rancher-desktop-linux" --body "$(cat <<'EOF'
+git push -u origin feat/add-new-package
+
+gh pr create --title "feat(cask): add <name>-linux" --body "$(cat <<'EOF'
 ## Summary
-- Adds Rancher Desktop v1.15.0 as Linux cask
-- Uses .deb package format (no tarball available)
+- Adds <name> v<version> as Linux cask
 - Includes desktop integration with XDG paths
-- Passes style validation
+- Passes validation and style checks
 
 ## Testing
-- Validated with tap-validate --fix
-- Style check passed
+- Generated with tap-cask
+- Validated with tap-validate
+- Pre-commit hook passed
+
+Fixes #<issue-number>
 EOF
 )"
 ```
 
-**Why Pull Requests:**
-- Enables Gemini Code Assist automatic reviews
-- Creates discussion space for complex changes
-- Allows CI validation before merge
-- Documents feature development history
+---
 
-## Package Format Priority
+## STEP 9: Important Reminders
 
-When selecting downloads, follow this **strict priority order:**
+### Things You Should NEVER Do
 
-1. **Tarball (PREFERRED)** - `.tar.gz`, `.tar.xz`, `.tgz`
-   - Most portable across distributions
-   - Simple extraction
-   - Example: `app-linux-x64.tar.gz`
+1. ❌ **Skip validation** - Generators validate automatically, don't skip the step
+2. ❌ **Edit generated files** - Regenerate instead
+3. ❌ **Use `--no-verify`** - This bypasses pre-commit hooks
+4. ❌ **Write casks manually** - Always use `tap-cask generate`
+5. ❌ **Commit without seeing "✓ Validation passed"**
+6. ❌ **Use hardcoded paths** - Generators use XDG variables automatically
+7. ❌ **Add `depends_on :linux`** - This is a Linux-only tap, it's implicit
 
-2. **Debian Package (SECOND CHOICE)** - `.deb`
-   - Use only if no tarball available
-   - Requires extraction via `ar` and `tar`
-   - Example: `app_amd64.deb`
+### Things That Guarantee Success
 
-3. **Other formats** - Only with justification
-   - AppImage, snap, flatpak: Case-by-case
-   - RPM: Generally avoid
+1. ✅ **Use generators** - They handle validation automatically
+2. ✅ **Wait for "✓ Validation passed"** - Don't commit before seeing this
+3. ✅ **Let pre-commit hook run** - Don't bypass it
+4. ✅ **Follow the exact command sequence** - Copy-paste from STEP 2
+5. ✅ **Trust the tools** - They're designed to prevent CI failures
+6. ✅ **Read error messages** - They tell you exactly what's wrong
 
-## XDG Base Directory Specification (CRITICAL)
+---
 
-**ALWAYS use XDG environment variables, NEVER hardcoded paths:**
+## STEP 10: Why This Workflow Exists
 
-```ruby
-# ✅ CORRECT
-target: "#{ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")}/applications/app.desktop"
+### The Problem It Solves
 
-# ❌ WRONG
-target: "#{Dir.home}/.local/share/applications/app.desktop"
+Before this workflow:
+- ❌ Agents wrote casks manually → style issues → CI failures
+- ❌ Validation was optional → agents skipped it → CI failures  
+- ❌ No pre-commit hooks → issues caught too late → wasted time
+
+After this workflow:
+- ✅ Generators create valid code automatically
+- ✅ Validation is built into generators → impossible to skip
+- ✅ Pre-commit hooks catch issues before CI → zero CI failures
+- ✅ Fast feedback loop (2-3 seconds vs 60 seconds)
+
+### The Design Philosophy
+
+**"Make the right thing easy, and the wrong thing hard."**
+
+- ✅ Right thing (using generators): Easy, fast, always works
+- ❌ Wrong thing (manual writing): Hard, slow, requires knowledge
+
+**"Shift validation left."**
+
+- Catch issues at creation time (generators), not at commit time (CI)
+- Every layer validates (generator → pre-commit hook → CI)
+- Defense-in-depth approach
+
+---
+
+## STEP 11: Getting Help
+
+### If Something Is Unclear
+
+1. Read the error message carefully - they're designed to be actionable
+2. Check `docs/TROUBLESHOOTING.md` for common issues
+3. Check `docs/CASK_CREATION_GUIDE.md` for cask-specific rules
+4. Check `docs/FORMULA_PATTERNS.md` for formula examples
+
+### If You Encounter a Bug
+
+1. Save the command you ran
+2. Save the complete error output
+3. Save the generated file (if any)
+4. File an issue with all three
+
+---
+
+## Quick Reference: Complete Workflow
+
+```bash
+# 1. Setup (once per session)
+[ -f .git/hooks/pre-commit ] || ./scripts/setup-hooks.sh
+
+# 2. Generate cask
+./tap-tools/tap-cask generate https://github.com/user/repo
+# ✅ Wait for: "✓ Validation passed"
+
+# 3. Stage
+git add Casks/<name>-linux.rb
+
+# 4. Commit
+git commit -m "feat(cask): add <name>-linux v<version>
+
+<description>
+
+Assisted-by: Claude 3.5 Sonnet via GitHub Copilot"
+
+# 5. Push
+git push
 ```
 
-**Standard XDG directories:**
-- `$XDG_DATA_HOME` (default: `~/.local/share`) - Application data, desktop files, icons
-- `$XDG_CONFIG_HOME` (default: `~/.config`) - Configuration files
-- `$XDG_CACHE_HOME` (default: `~/.cache`) - Cache data
-- `$XDG_STATE_HOME` (default: `~/.local/state`) - State data, logs
+**That's it. If you follow these 5 steps, CI will pass every time.**
 
-## Desktop Integration (GUI Applications)
+---
 
-**ALL GUI applications MUST install:**
-1. Desktop file (`.desktop`) to `$XDG_DATA_HOME/applications/`
-2. Icon to `$XDG_DATA_HOME/icons/`
+## Document Version
 
-**Example pattern (see sublime-text-linux.rb for reference):**
-
-```ruby
-cask "app-name-linux" do
-  version "1.0.0"
-  sha256 "abc123..."
-
-  url "https://example.com/app-linux-x64.tar.gz"
-  name "App Name"
-  desc "One-line description"
-  homepage "https://example.com/"
-
-  binary "app/bin/app"
-  artifact "app/app.desktop",
-           target: "#{ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")}/applications/app.desktop"
-  artifact "app/icon.png",
-           target: "#{ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")}/icons/app.png"
-
-  preflight do
-    xdg_data_home = ENV.fetch("XDG_DATA_HOME", "#{Dir.home}/.local/share")
-    FileUtils.mkdir_p "#{xdg_data_home}/applications"
-    FileUtils.mkdir_p "#{xdg_data_home}/icons"
-
-    desktop_file = "#{staged_path}/app/app.desktop"
-    if File.exist?(desktop_file)
-      content = File.read(desktop_file)
-      updated_content = content.gsub(%r{/opt/app/app}, "#{HOMEBREW_PREFIX}/bin/app")
-      File.write(desktop_file, updated_content)
-    end
-  end
-
-  zap trash: [
-    "#{ENV.fetch("XDG_CACHE_HOME", "#{Dir.home}/.cache")}/app",
-    "#{ENV.fetch("XDG_CONFIG_HOME", "#{Dir.home}/.config")}/app",
-  ]
-end
-```
-
-## Common Pitfalls and Errors
-
-### ❌ Error: "wrong number of arguments (given 1, expected 0)"
-**Cause:** Using `depends_on :linux`  
-**Fix:** Remove it entirely (this is a Linux-only tap)
-
-### ❌ Error: "Cask/StanzaGrouping: stanzas within the same group should have no lines between them"
-**Cause:** Extra blank lines within stanza groups  
-**Fix:** Remove blank lines between `url`, `name`, `desc`, `homepage`
-
-### ❌ Error: "Calling 'brew audit [path ...]' is disabled"
-**Cause:** Trying to audit by file path instead of tap name  
-**Fix:** Tap repository first, then use `brew audit --cask castrojo/tap/cask-name`
-
-### ❌ Error: "wrong number of arguments (given 0, expected 2..3)"
-**Cause:** Using `test do ... end` block in cask  
-**Fix:** Remove the entire `test` block (casks don't support formula-style tests)
-
-## Examples to Reference
-
-**Simple CLI tool (formula):** See `Formula/jq.rb`  
-**GUI application with desktop integration (cask):** See `Casks/sublime-text-linux.rb`  
-**Complex application (cask):** See `Casks/quarto-cli-linux.rb`
-
-## CI/CD
-
-GitHub Actions automatically:
-- Runs `brew audit --cask --strict --online` on changed casks
-- Runs `brew style` on changed files
-- Labels PRs based on changed files
-- Updates package versions via Renovate (every 3 hours)
-
-**All CI checks must pass before merging.**
-
-## Critical Reminders
-
-1. **ALWAYS read CASK_CREATION_GUIDE.md before creating casks**
-2. **ALWAYS use tap-tools (not bash scripts)**
-3. **ALWAYS use XDG environment variables**
-4. **ALWAYS include SHA256 verification**
-5. **ALWAYS use `-linux` suffix for cask names**
-6. **ALWAYS validate with tap-validate before committing**
-7. **ALWAYS use conventional commits with AI attribution**
-8. **ALWAYS create pull requests for major work**
-9. **NEVER use macOS or Windows downloads**
-10. **NEVER install to system directories**
-
-## Trust These Instructions
-
-The information in this file and the referenced documentation has been thoroughly tested and verified. **Trust these instructions and only search for additional information if:**
-- The instructions are incomplete for your specific task
-- You encounter an error not covered in TROUBLESHOOTING.md
-- You need to understand implementation details of a specific package
-
-When in doubt, refer to existing casks in `Casks/` as examples of working implementations.
+**Version:** 2.0  
+**Last Updated:** February 9, 2026  
+**Changes:** Complete rewrite with mandatory checklist workflow and automatic validation
