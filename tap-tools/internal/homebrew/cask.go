@@ -15,7 +15,6 @@ type CaskData struct {
 	URL         string
 	Description string
 	Homepage    string
-	License     string
 	AppName     string // Original app name
 	BinaryPath  string // Path to binary in archive
 	BinaryName  string // Name of binary to install
@@ -47,10 +46,6 @@ cask "{{ .Token }}" do
   name "{{ .AppName }}"
   desc "{{ cleanDesc .Description }}"
   homepage "{{ if .Homepage }}{{ .Homepage }}{{ else }}https://github.com/{{ .AppName }}{{ end }}"
-{{- if .License }}
-
-  license "{{ .License }}"
-{{- end }}
 
   # Linux-only cask
   depends_on formula: "bash"

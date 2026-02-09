@@ -88,7 +88,6 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 	}
 	fmt.Println(successStyle.Render(fmt.Sprintf("✓ Found: %s", repository.Description)))
 	fmt.Println(infoStyle.Render(fmt.Sprintf("  Homepage: %s", repository.Homepage)))
-	fmt.Println(infoStyle.Render(fmt.Sprintf("  License: %s", repository.License)))
 
 	// Get latest release
 	fmt.Println(titleStyle.Render("\n🔍 Finding latest release..."))
@@ -212,9 +211,6 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 	caskData.AppName = repo
 	caskData.Description = repository.Description
 	caskData.Homepage = repository.Homepage
-	if repository.License != "" {
-		caskData.License = repository.License
-	}
 
 	// Set binary path from detection
 	if len(detectedBinaries) > 0 {

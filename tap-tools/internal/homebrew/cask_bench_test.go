@@ -13,7 +13,6 @@ func BenchmarkGenerateCask(b *testing.B) {
 		AppName:     "Sublime Text",
 		Description: "Text editor for code, markup and prose",
 		Homepage:    "https://www.sublimetext.com",
-		License:     "Proprietary",
 		BinaryName:  "sublime_text",
 		BinaryPath:  "sublime_text",
 		ZapTrash:    []string{"~/.config/sublime-text"},
