@@ -10,6 +10,7 @@ import (
 	"github.com/castrojo/tap-tools/internal/github"
 	"github.com/castrojo/tap-tools/internal/homebrew"
 	"github.com/castrojo/tap-tools/internal/platform"
+	"github.com/castrojo/tap-tools/internal/validate"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 )
@@ -200,6 +201,23 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Println(successStyle.Render(fmt.Sprintf("✓ Created: %s", outputPath)))
+
+	// Validate the generated cask
+	fmt.Println(titleStyle.Render("\n🔍 Validating generated cask..."))
+	result, err := validate.ValidateFile(outputPath, true, true)
+	if err != nil {
+		fmt.Println(errorStyle.Render("✗ Validation failed:"))
+		for _, errMsg := range result.Errors {
+			fmt.Println(errorStyle.Render(fmt.Sprintf("  - %s", errMsg)))
+		}
+		return fmt.Errorf("generated cask failed validation")
+	}
+
+	if result.Fixed {
+		fmt.Println(successStyle.Render("✓ Validation passed (style issues auto-fixed)"))
+	} else {
+		fmt.Println(successStyle.Render("✓ Validation passed"))
+	}
 
 	// Print next steps
 	fmt.Println(titleStyle.Render("\n✅ Done! Next steps:"))

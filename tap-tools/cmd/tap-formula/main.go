@@ -10,6 +10,7 @@ import (
 	"github.com/castrojo/tap-tools/internal/github"
 	"github.com/castrojo/tap-tools/internal/homebrew"
 	"github.com/castrojo/tap-tools/internal/platform"
+	"github.com/castrojo/tap-tools/internal/validate"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 )
@@ -293,6 +294,25 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 
 	fmt.Println(successStyle.Render(fmt.Sprintf("✓ Created: %s", outputPath)))
 
+	// Validate the generated formula
+	fmt.Println(titleStyle.Render("\n🔍 Validating generated formula..."))
+	result, err := validate.ValidateFile(outputPath, false, true)
+	if err != nil {
+		fmt.Println(errorStyle.Render("✗ Validation failed:"))
+		if result != nil {
+			for _, errMsg := range result.Errors {
+				fmt.Println(errorStyle.Render(fmt.Sprintf("  - %s", errMsg)))
+			}
+		}
+		return fmt.Errorf("generated formula failed validation")
+	}
+
+	if result.Fixed {
+		fmt.Println(successStyle.Render("✓ Validation passed (style issues auto-fixed)"))
+	} else {
+		fmt.Println(successStyle.Render("✓ Validation passed"))
+	}
+
 	// Print next steps
 	fmt.Println(titleStyle.Render("\n✅ Done! Next steps:"))
 	fmt.Println(infoStyle.Render(fmt.Sprintf("   1. Review %s", outputPath)))
@@ -302,8 +322,7 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 		fmt.Println(infoStyle.Render("   2. Verify binary paths and adjust if needed"))
 		fmt.Println(infoStyle.Render("   3. Test: brew install " + packageName))
 	}
-	fmt.Println(infoStyle.Render("   4. Run: brew audit --strict --online " + packageName))
-	fmt.Println(infoStyle.Render("   5. Commit and push"))
+	fmt.Println(infoStyle.Render("   4. Commit and push"))
 
 	return nil
 }

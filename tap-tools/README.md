@@ -45,6 +45,8 @@ Go CLI tools to replace bash scripts for generating Homebrew formulas and casks 
 - Integration with `brew audit` and `brew style`
 - Validation of all formulas and casks
 - Auto-fix mode for style issues
+- **Automatic validation in tap-cask and tap-formula**
+- **Generated packages always pass brew audit and style checks**
 - Performance benchmarks added
 - Comprehensive documentation
 
@@ -194,6 +196,8 @@ tap-tools/
 # 🔐 Calculating SHA256...
 # 📝 Generating formula...
 # ✅ Created: Formula/ripgrep.rb
+# 🔍 Validating generated formula...
+# ✓ Validation passed (or style issues auto-fixed)
 ```
 
 **Cask Generator:**
@@ -212,6 +216,8 @@ tap-tools/
 # 🖼️  Detecting desktop integration...
 # 📝 Generating cask...
 # ✅ Created: Casks/sublime-text-linux.rb
+# 🔍 Validating generated cask...
+# ✓ Validation passed (or style issues auto-fixed)
 ```
 
 **Issue Processor:**
@@ -377,6 +383,34 @@ golangci-lint run
 4. **XDG compliance** - All installations to user home directory
 5. **Type safety** - Leverage Go's type system for correctness
 6. **Testability** - Comprehensive unit tests for all packages
+7. **Zero-error packaging** - All generated packages automatically pass `brew audit` and `brew style`
+
+## Auto-Validation
+
+**IMPORTANT:** Both `tap-cask` and `tap-formula` now automatically validate generated packages.
+
+After generating a formula or cask, the tools will:
+1. Run `brew audit --strict --online` on the generated file
+2. Run `brew style --fix` to automatically fix any style issues
+3. Re-run audit to ensure fixes didn't break anything
+4. Exit with an error if validation fails
+
+**This is MANDATORY and cannot be disabled.** All generated packages are guaranteed to pass validation before the tool exits successfully.
+
+If validation fails:
+- The generated file will still be written
+- Error messages will show what failed
+- You can manually fix issues and re-run `tap-validate file <path>`
+
+Example validation output:
+```bash
+./tap-formula generate https://github.com/user/repo
+
+# ... generation steps ...
+
+🔍 Validating generated formula...
+✓ Validation passed (style issues auto-fixed)
+```
 
 ## Contributing
 

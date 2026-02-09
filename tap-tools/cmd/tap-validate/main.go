@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/castrojo/tap-tools/internal/validate"
 	"github.com/spf13/cobra"
 )
 
@@ -31,7 +32,7 @@ func main() {
 		Use:   "file [path]",
 		Short: "Validate a specific formula or cask file",
 		Args:  cobra.ExactArgs(1),
-		RunE:  validateFile,
+		RunE:  validateFileCmd,
 	}
 
 	validateAllCmd.Flags().BoolVar(&fixStyle, "fix", false, "Automatically fix style issues")
@@ -67,14 +68,21 @@ func validateAll(cmd *cobra.Command, args []string) error {
 				name := strings.TrimSuffix(filepath.Base(formula), ".rb")
 				fmt.Printf("  Checking %s...\n", name)
 
-				if err := runAudit(formula, false); err != nil {
-					fmt.Printf("  ✗ %s failed audit\n", name)
+				result, err := validate.ValidateFile(formula, false, fixStyle)
+				if err != nil {
+					fmt.Printf("  ✗ %s failed validation\n", name)
+					if result != nil {
+						for _, errMsg := range result.Errors {
+							fmt.Printf("    - %s\n", errMsg)
+						}
+					}
 					failed++
-				}
-
-				if err := runStyle(formula, fixStyle); err != nil {
-					fmt.Printf("  ✗ %s failed style check\n", name)
-					failed++
+				} else {
+					if result.Fixed {
+						fmt.Printf("  ✓ %s passed (style issues auto-fixed)\n", name)
+					} else {
+						fmt.Printf("  ✓ %s passed\n", name)
+					}
 				}
 			}
 		} else {
@@ -98,14 +106,21 @@ func validateAll(cmd *cobra.Command, args []string) error {
 				name := strings.TrimSuffix(filepath.Base(cask), ".rb")
 				fmt.Printf("  Checking %s...\n", name)
 
-				if err := runAudit(cask, true); err != nil {
-					fmt.Printf("  ✗ %s failed audit\n", name)
+				result, err := validate.ValidateFile(cask, true, fixStyle)
+				if err != nil {
+					fmt.Printf("  ✗ %s failed validation\n", name)
+					if result != nil {
+						for _, errMsg := range result.Errors {
+							fmt.Printf("    - %s\n", errMsg)
+						}
+					}
 					failed++
-				}
-
-				if err := runStyle(cask, fixStyle); err != nil {
-					fmt.Printf("  ✗ %s failed style check\n", name)
-					failed++
+				} else {
+					if result.Fixed {
+						fmt.Printf("  ✓ %s passed (style issues auto-fixed)\n", name)
+					} else {
+						fmt.Printf("  ✓ %s passed\n", name)
+					}
 				}
 			}
 		} else {
@@ -123,7 +138,7 @@ func validateAll(cmd *cobra.Command, args []string) error {
 	return fmt.Errorf("✗ %d check(s) failed", failed)
 }
 
-func validateFile(cmd *cobra.Command, args []string) error {
+func validateFileCmd(cmd *cobra.Command, args []string) error {
 	filePath := args[0]
 
 	// Determine if it's a cask or formula
@@ -132,54 +147,24 @@ func validateFile(cmd *cobra.Command, args []string) error {
 	name := strings.TrimSuffix(filepath.Base(filePath), ".rb")
 	fmt.Printf("→ Validating %s...\n", name)
 
-	var failed int
+	result, err := validate.ValidateFile(filePath, isCask, fixStyle)
+	if err != nil {
+		fmt.Println("✗ Validation failed")
+		if result != nil {
+			for _, errMsg := range result.Errors {
+				fmt.Printf("  - %s\n", errMsg)
+			}
+		}
+		return err
+	}
 
-	if err := runAudit(filePath, isCask); err != nil {
-		fmt.Printf("✗ Audit failed\n")
-		failed++
+	if result.Fixed {
+		fmt.Println("✓ Validation passed (style issues auto-fixed)")
 	} else {
-		fmt.Println("✓ Audit passed")
+		fmt.Println("✓ Validation passed")
 	}
 
-	if err := runStyle(filePath, fixStyle); err != nil {
-		fmt.Printf("✗ Style check failed\n")
-		failed++
-	} else {
-		fmt.Println("✓ Style check passed")
-	}
-
-	if failed > 0 {
-		return fmt.Errorf("%d check(s) failed", failed)
-	}
-
-	fmt.Println("\n✓ All checks passed!")
 	return nil
-}
-
-func runAudit(filePath string, isCask bool) error {
-	args := []string{"audit", "--strict", "--online"}
-	if isCask {
-		args = append(args, "--cask")
-	}
-	args = append(args, filePath)
-
-	cmd := exec.Command("brew", args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
-}
-
-func runStyle(filePath string, fix bool) error {
-	args := []string{"style"}
-	if fix {
-		args = append(args, "--fix")
-	}
-	args = append(args, filePath)
-
-	cmd := exec.Command("brew", args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
 }
 
 func findRepoRoot() (string, error) {
