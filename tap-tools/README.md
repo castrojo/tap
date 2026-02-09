@@ -30,6 +30,16 @@ Go CLI tools to replace bash scripts for generating Homebrew formulas and casks 
 - Formula template generation
 - Unit tests with >89% coverage for buildsystem and formula packages
 
+**Phase 4: Issue Processor** ✅ COMPLETE
+- `tap-issue` CLI tool fully implemented
+- GitHub issue parsing and metadata extraction
+- Automatic package type detection (formula vs cask)
+- Workflow orchestration (calls tap-formula or tap-cask)
+- Git branch creation and commit automation
+- PR creation and issue commenting with `--create-pr` flag
+- Dry-run mode for previewing actions
+- Unit tests for issue parsing
+
 ## Project Structure
 
 ```
@@ -37,7 +47,7 @@ tap-tools/
 ├── cmd/                    # CLI applications
 │   ├── tap-formula/       # ✅ Formula generator
 │   ├── tap-cask/          # ✅ Cask generator
-│   ├── tap-issue/         # Issue processor (planned)
+│   ├── tap-issue/         # ✅ Issue processor
 │   └── tap-validate/      # Validator (planned)
 ├── internal/
 │   ├── github/            # ✅ GitHub API client
@@ -45,7 +55,8 @@ tap-tools/
 │   ├── platform/          # ✅ Linux format detection
 │   ├── homebrew/          # ✅ Formula & Cask generation
 │   ├── desktop/           # ✅ Desktop integration
-│   └── buildsystem/       # ✅ Build system detection
+│   ├── buildsystem/       # ✅ Build system detection
+│   └── issues/            # ✅ Issue parsing & PR creation
 ├── pkg/
 │   └── templates/         # Embedded templates (planned)
 ├── go.mod
@@ -128,7 +139,37 @@ tap-tools/
   - `--binary`: Specify binary name
   - `--output`: Custom output path
 
-**Usage Example:**
+### Phase 4: Issue Processor
+
+#### Issues Package (`internal/issues/`)
+- Parse GitHub issues for package requests
+- Extract repository URL from issue body
+- Extract package description (optional)
+- Detect package type (formula vs cask) from keywords
+- Derive package name from repository URL
+- Create pull requests
+- Comment on issues
+
+#### `tap-issue` CLI (`cmd/tap-issue/`)
+- Process GitHub issues to create packages automatically
+- Workflow:
+  1. Fetch and parse GitHub issue
+  2. Extract repository URL and metadata
+  3. Detect package type (formula or cask)
+  4. Create git branch: `package-request-<issue>-<name>`
+  5. Call appropriate generator (tap-formula or tap-cask)
+  6. Commit changes with conventional commit format
+  7. Push to remote
+  8. Optionally create PR and comment on issue
+- Flags:
+  - `--create-pr`: Create pull request after generation
+  - `--dry-run`: Preview actions without executing
+  - `--owner`: GitHub repository owner (auto-detected)
+  - `--repo`: GitHub repository name (auto-detected)
+
+**Usage Examples:**
+
+**Formula Generator:**
 ```bash
 ./tap-formula generate https://github.com/BurntSushi/ripgrep
 
@@ -147,7 +188,7 @@ tap-tools/
 # ✅ Created: Formula/ripgrep.rb
 ```
 
-**Cask Example:**
+**Cask Generator:**
 ```bash
 ./tap-cask generate sublime-text https://github.com/sublimehq/sublime_text
 
@@ -163,6 +204,63 @@ tap-tools/
 # 🖼️  Detecting desktop integration...
 # 📝 Generating cask...
 # ✅ Created: Casks/sublime-text-linux.rb
+```
+
+**Issue Processor:**
+```bash
+# Preview what would happen (dry-run)
+./tap-issue process 42 --dry-run
+
+# Process issue and create package
+./tap-issue process 42
+
+# Process issue, create package, and open PR
+./tap-issue process 42 --create-pr
+
+# Output:
+# ━━━ Preflight Checks ━━━
+# ✓ GitHub token found
+# ✓ Git repository detected
+# ✓ Repository: castrojo/homebrew-tap
+#
+# ━━━ Fetching Issue #42 ━━━
+# → Fetching issue data...
+# ✓ Issue: Add ripgrep CLI tool
+# → State: open
+# → URL: https://github.com/castrojo/homebrew-tap/issues/42
+#
+# ━━━ Package Detection ━━━
+# ✓ Repository URL: https://github.com/BurntSushi/ripgrep
+# ✓ Package Name: ripgrep
+# ✓ Package Type: formula
+#
+# ━━━ Creating Git Branch ━━━
+# → Creating branch: package-request-42-ripgrep
+# ✓ On branch: package-request-42-ripgrep
+#
+# ━━━ Generating Package ━━━
+# → Generating formula...
+# ✓ Package generated successfully
+#
+# ━━━ Committing Changes ━━━
+# → Staging Formula/ripgrep.rb...
+# → Creating commit: feat: add ripgrep formula (closes #42)
+# ✓ Changes committed
+#
+# ━━━ Pushing to Remote ━━━
+# → Pushing branch to remote...
+# ✓ Branch pushed to origin/package-request-42-ripgrep
+#
+# ━━━ Summary ━━━
+# Package Details:
+#   Name:        ripgrep
+#   Type:        formula
+#   Repository:  https://github.com/BurntSushi/ripgrep
+#   File:        Formula/ripgrep.rb
+#
+# Git Details:
+#   Branch:      package-request-42-ripgrep
+#   Commit:      feat: add ripgrep formula (closes #42)
 ```
 
 ## Testing
@@ -191,21 +289,20 @@ go tool cover -html=coverage.out
 ## Dependencies
 
 - `github.com/google/go-github/v60` - GitHub API client
-- `github.com/spf13/cobra` - CLI framework (ready for use)
-- `github.com/charmbracelet/lipgloss` - Pretty terminal output (ready for use)
-- `github.com/hashicorp/go-version` - Version parsing (ready for use)
+- `github.com/spf13/cobra` - CLI framework
+- `github.com/charmbracelet/lipgloss` - Pretty terminal output
 - `golang.org/x/oauth2` - OAuth support
 
-## Next Steps (Phase 4)
+## Next Steps (Phase 5)
 
 See [../docs/GO_MIGRATION_PLAN.md](../docs/GO_MIGRATION_PLAN.md) for full plan.
 
-**Phase 4: Issue Processor** (planned)
-- [ ] Implement issue parsing from GitHub
-- [ ] Implement workflow orchestration (formula vs cask detection)
-- [ ] Implement `tap-issue` CLI command
-- [ ] Add PR creation integration
-- [ ] Write integration tests
+**Phase 5: Validation & Polish** (planned)
+- [ ] Implement `tap-validate` CLI command
+- [ ] Add brew audit integration
+- [ ] Validate formula/cask syntax
+- [ ] Check for common issues
+- [ ] Write integration tests for full workflows
 
 ## Development
 
@@ -213,15 +310,22 @@ See [../docs/GO_MIGRATION_PLAN.md](../docs/GO_MIGRATION_PLAN.md) for full plan.
 # Build all commands
 go build ./cmd/...
 
-# Run tap-cask
-./tap-cask generate https://github.com/user/app
-
 # Run tap-formula
 ./tap-formula generate https://github.com/user/tool
 
+# Run tap-cask
+./tap-cask generate https://github.com/user/app
+
+# Run tap-issue (requires GITHUB_TOKEN)
+export GITHUB_TOKEN=ghp_...
+./tap-issue process 42
+./tap-issue process 42 --dry-run
+./tap-issue process 42 --create-pr
+
 # Or run directly
-go run ./cmd/tap-cask generate app-name https://github.com/user/repo
-go run ./cmd/tap-formula generate tool-name https://github.com/user/repo
+go run ./cmd/tap-formula generate https://github.com/user/repo
+go run ./cmd/tap-cask generate https://github.com/user/repo
+go run ./cmd/tap-issue process 42
 
 # Format code
 go fmt ./...
