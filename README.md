@@ -4,15 +4,15 @@ Automated Homebrew tap for Linux packages with intelligent updates and quality g
 
 ## Features
 
-- 🤖 **Automated Updates**: Renovate checks every 3 hours, auto-merges patches
-- ✅ **Quality Gates**: All packages pass `brew audit --strict` and `brew style`
-- 📦 **Formulas & Casks**: CLI tools and GUI applications
-- 🤝 **Agent-Friendly**: Comprehensive docs for AI-assisted package creation
+- **Automated Updates**: Renovate checks every 3 hours, auto-merges patches
+- **Quality Gates**: All packages pass `brew audit --strict` and `brew style`
+- **Formulas & Casks**: CLI tools and GUI applications
+- **Agent-Friendly**: Comprehensive docs for AI-assisted package creation
 
 ## Installation
 
 ```bash
-brew tap [username]/tap
+brew tap castrojo/tap
 ```
 
 ## Usage
@@ -34,21 +34,21 @@ An agent will research and create the package automatically.
 
 ## For Package Maintainers
 
-See [docs/AGENT_GUIDE.md](docs/AGENT_GUIDE.md) for comprehensive packaging instructions.
+See [docs/AGENT_GUIDE.md](docs/AGENT_GUIDE.md) (coming soon) for comprehensive packaging instructions.
 
 ### Quick Start
 
 ```bash
-# Create formula from GitHub repository
+# Create formula from GitHub repository (coming soon)
 ./scripts/new-formula.sh package-name https://github.com/user/repo
 
-# Create cask from GitHub repository
+# Create cask from GitHub repository (coming soon)
 ./scripts/new-cask.sh app-name https://github.com/user/repo
 
-# Process package request from issue
+# Process package request from issue (coming soon)
 ./scripts/from-issue.sh 42
 
-# Validate all packages
+# Validate all packages (coming soon)
 ./scripts/validate-all.sh
 ```
 
