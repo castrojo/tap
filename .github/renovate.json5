@@ -21,11 +21,9 @@
       // Match Homebrew Formula files
       "fileMatch": ["^Formula/.+\\.rb$"],
       "matchStrings": [
-        // Match version and sha256 in formulas
-        "\\s+version\\s+[\"'](?<currentValue>[^\"']+)[\"']",
-        "\\s+sha256\\s+[\"'](?<currentDigest>[^\"']+)[\"']"
+        // Capture GitHub repo, version, and sha256 together
+        "url\\s+[\"']https://github\\.com/(?<depName>[^/]+/[^/]+)/.*[\"']\\s*\\n\\s*version\\s+[\"'](?<currentValue>[^\"']+)[\"']\\s*\\n\\s*sha256\\s+[\"'](?<currentDigest>[^\"']+)[\"']"
       ],
-      "depNameTemplate": "{{packageFile}}",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v?(?<version>.+)$"
     },
@@ -33,12 +31,9 @@
       // Match Homebrew Cask files
       "fileMatch": ["^Casks/.+\\.rb$"],
       "matchStrings": [
-        // Match version in casks
-        "\\s+version\\s+[\"'](?<currentValue>[^\"']+)[\"']",
-        // Match sha256 in casks
-        "\\s+sha256\\s+[\"'](?<currentDigest>[^\"']+)[\"']"
+        // Capture GitHub repo, version, and sha256 together
+        "url\\s+[\"']https://github\\.com/(?<depName>[^/]+/[^/]+)/.*[\"']\\s*\\n\\s*version\\s+[\"'](?<currentValue>[^\"']+)[\"']\\s*\\n\\s*sha256\\s+[\"'](?<currentDigest>[^\"']+)[\"']"
       ],
-      "depNameTemplate": "{{packageFile}}",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v?(?<version>.+)$"
     }
