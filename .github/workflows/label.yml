@@ -17,4 +17,4 @@ jobs:
       - name: Run labeler
         uses: actions/labeler@v5
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}

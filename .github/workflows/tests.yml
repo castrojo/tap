@@ -35,14 +35,18 @@ jobs:
         if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-            echo "Auditing $file"
-            brew audit --strict --online "$file"
+            # Extract formula/cask name from path (e.g., Formula/foo.rb -> foo)
+            name=$(basename "$file" .rb)
+            echo "Auditing $name (from $file)"
+            brew audit --strict --online "$name"
           done
 
       - name: Run brew style
         if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-            echo "Checking style for $file"
-            brew style "$file"
+            # Extract formula/cask name from path (e.g., Formula/foo.rb -> foo)
+            name=$(basename "$file" .rb)
+            echo "Checking style for $name (from $file)"
+            brew style "$name"
           done
