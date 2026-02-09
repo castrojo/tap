@@ -13,7 +13,6 @@ func TestGenerateCask(t *testing.T) {
 		URL:         "https://example.com/sublime.tar.gz",
 		Description: "Text editor",
 		Homepage:    "https://sublimetext.com",
-		License:     "MIT",
 		AppName:     "Sublime Text",
 		BinaryPath:  "sublime_text/sublime_text",
 		BinaryName:  "sublime-text",
@@ -33,7 +32,6 @@ func TestGenerateCask(t *testing.T) {
 		`name "Sublime Text"`,
 		`desc "Text editor"`,
 		`homepage "https://sublimetext.com"`,
-		`license "MIT"`,
 		`binary "sublime_text/sublime_text", target: "sublime-text"`,
 	}
 
@@ -41,6 +39,11 @@ func TestGenerateCask(t *testing.T) {
 		if !strings.Contains(cask, req) {
 			t.Errorf("Generated cask missing required content: %q", req)
 		}
+	}
+
+	// Ensure license stanza is NOT present (not supported for casks)
+	if strings.Contains(cask, "\n  license ") {
+		t.Error("Generated cask should not contain license stanza (not supported for casks)")
 	}
 }
 
