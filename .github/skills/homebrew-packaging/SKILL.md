@@ -535,11 +535,6 @@ The following features are under development:
 - No way to skip validation when using tools
 - Immediate feedback on any issues
 
-### validate-and-commit.sh Script
-- One-command workflow: `./scripts/validate-and-commit.sh <file> "<message>"`
-- Runs validation, stages file, commits with proper format
-- Reduces chance of skipping validation
-
 ### Enhanced CI Smoke Testing (Phase 3)
 - Real installation tests in container environment
 - Verifies packages actually work, not just pass style

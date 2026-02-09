@@ -304,28 +304,17 @@ Located in `tap-tools/`, pre-built binaries available:
 - ✅ Desktop integration detection (icons, .desktop files)
 - ✅ SHA256 verification and upstream checksum discovery
 - ✅ XDG Base Directory Spec compliance
+- ✅ **Automatic validation with brew audit and brew style**
 - ✅ Pretty terminal output with progress indicators
 
 See [tap-tools/README.md](tap-tools/README.md) for complete documentation.
-
-### Legacy Bash Scripts (Deprecated)
-
-Located in `scripts/` - still functional but slower:
-
-- `new-formula.sh` - Generate new formula from GitHub releases
-- `new-cask.sh` - Generate new cask from GitHub releases
-- `from-issue.sh` - Process package requests from GitHub issues
-- `validate-all.sh` - Validate all formulas and casks
-- `update-sha256.sh` - Update checksums after version changes
-
-**Migration:** Prefer Go tools over bash scripts for better performance and reliability.
 
 ## Best Practices
 
 ### Code Style
 - Be surgical with minimal code changes
 - Follow existing patterns in the codebase
-- Run `scripts/validate-all.sh` before committing
+- Run `./tap-tools/tap-validate all` before committing
 - Keep formulas and casks simple and readable
 
 ### Package Naming
@@ -337,14 +326,14 @@ Package names are **always derived from the repository name**, never manually sp
 - ALL casks MUST use `-linux` suffix
 - Example: `sublime-text-linux`, `jetbrains-toolbox-linux`
 - Prevents collision with official macOS casks
-- The `new-cask.sh` script automatically appends `-linux` if not present
+- The `tap-cask` tool automatically appends `-linux` if not present
 
 **Formula naming:**
 - No suffix required for formulas (CLI tools)
 
 ### Commit Workflow
 1. Make changes
-2. Run `scripts/validate-all.sh` (if available)
+2. Run `./tap-tools/tap-validate all` (if needed - generators validate automatically)
 3. Commit with conventional commit format
 4. Add `Assisted-by:` footer with model and tool
 5. Push to remote
