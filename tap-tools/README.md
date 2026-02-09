@@ -316,6 +316,90 @@ go tool cover -html=coverage.out
 - `github.com/charmbracelet/lipgloss` - Pretty terminal output
 - `golang.org/x/oauth2` - OAuth support
 
+## Environment Variables
+
+### GITHUB_TOKEN (Required)
+
+All tap-tools require `GITHUB_TOKEN` for GitHub API access. The tools will not work without it.
+
+**Why It's Required:**
+- Fetching repository metadata and releases
+- Verifying upstream checksums
+- Creating PRs and commenting on issues (tap-issue only)
+- Avoiding rate limits (60/hour unauthenticated vs 5,000/hour authenticated)
+
+**Rate Limits:**
+| Environment | Rate Limit | Search API |
+|-------------|------------|------------|
+| Unauthenticated | 60/hour | 10/hour |
+| Authenticated (Personal Token) | 5,000/hour | 30/hour |
+| GitHub Actions | 15,000/hour | 90/hour |
+
+**Setting Up:**
+
+1. **GitHub Actions (Automatic):**
+   ```bash
+   # Token is automatically available, no setup needed
+   ./tap-tools/tap-issue process 42
+   ```
+
+2. **Local Development (Recommended):**
+   ```bash
+   # Use gh CLI to get your token
+   export GITHUB_TOKEN=$(gh auth token)
+   
+   # Verify it's set
+   echo $GITHUB_TOKEN
+   
+   # Check your current rate limit
+   gh api rate_limit | jq '.rate'
+   ```
+
+3. **Manual Token Creation:**
+   ```bash
+   # 1. Create token at: https://github.com/settings/tokens
+   # 2. Select 'repo' scope (read access)
+   # 3. Export the token:
+   export GITHUB_TOKEN=ghp_your_token_here
+   ```
+
+**Verification:**
+```bash
+# Quick check
+if [ -z "$GITHUB_TOKEN" ]; then
+    echo "⚠️  GITHUB_TOKEN not set - tools will fail"
+    echo "Fix: export GITHUB_TOKEN=\$(gh auth token)"
+else
+    echo "✅ GITHUB_TOKEN is set"
+    gh api rate_limit | jq '.rate | "Rate limit: \(.remaining)/\(.limit)"'
+fi
+```
+
+**Troubleshooting:**
+
+If you see errors like "GITHUB_TOKEN environment variable not set":
+
+```bash
+# For local development:
+export GITHUB_TOKEN=$(gh auth token)
+
+# If gh CLI is not authenticated:
+gh auth login
+export GITHUB_TOKEN=$(gh auth token)
+
+# Verify it works:
+./tap-formula generate https://github.com/user/repo
+```
+
+If you hit rate limits:
+```bash
+# Check when limits reset
+gh api rate_limit | jq '.rate.reset | todate'
+
+# Use authenticated requests (with GITHUB_TOKEN)
+# Unauthenticated: 60/hour → Authenticated: 5,000/hour
+```
+
 ## Performance Benchmarks
 
 Go tools are significantly faster than bash scripts:
