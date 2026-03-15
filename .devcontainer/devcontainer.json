@@ -1,0 +1,36 @@
+{
+  "$schema": "https://raw.githubusercontent.com/devcontainers/spec/refs/heads/main/schemas/devContainer.schema.json",
+  "name": "homebrew-tap",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+
+  "features": {
+    "ghcr.io/devcontainers-community/features/homebrew:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/guiyomh/features/just:0": {},
+    "ghcr.io/devcontainers/features/go:1": { "version": "latest" }
+  },
+
+  // Podman-compatible: rootless with SELinux label passthrough
+  "runArgs": [
+    "--userns=keep-id",
+    "--security-opt=label=disable"
+  ],
+  "containerUser": "vscode",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/homebrew-tap,type=bind,Z",
+  "workspaceFolder": "/workspaces/homebrew-tap",
+
+  "postCreateCommand": "brew tap castrojo/tap $(pwd) && ./scripts/setup-hooks.sh",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Shopify.ruby-lsp",
+        "github.vscode-github-actions",
+        "github.vscode-pull-request-github"
+      ],
+      "settings": {
+        "editor.formatOnSave": true
+      }
+    }
+  }
+}
