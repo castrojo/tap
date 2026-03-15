@@ -1,19 +1,19 @@
 {
   "$schema": "https://raw.githubusercontent.com/devcontainers/spec/refs/heads/main/schemas/devContainer.schema.json",
   "name": "homebrew-tap",
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
-
-  "features": {
-    "ghcr.io/devcontainers-community/features/homebrew:1": {},
-    "ghcr.io/devcontainers/features/github-cli:1": {},
-    "ghcr.io/guiyomh/features/just:0": {},
-    "ghcr.io/devcontainers/features/go:1": { "version": "latest" }
+  "build": {
+    "dockerfile": "Containerfile",
+    "context": "."
   },
 
   // Podman-compatible: rootless with SELinux label passthrough
+  // Mount host Homebrew so brew audit/style/tap use the real install
   "runArgs": [
     "--userns=keep-id",
     "--security-opt=label=disable"
+  ],
+  "mounts": [
+    "source=/home/linuxbrew,target=/home/linuxbrew,type=bind,Z"
   ],
   "containerUser": "vscode",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/homebrew-tap,type=bind,Z",

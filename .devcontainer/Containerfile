@@ -1,0 +1,26 @@
+FROM cgr.dev/chainguard/wolfi-base:latest
+
+USER root
+
+RUN apk add --no-cache \
+    bash \
+    curl \
+    git \
+    ruby \
+    go \
+    just \
+    github-cli \
+    gcc \
+    glibc-dev \
+    make \
+    shadow \
+    sudo
+
+# Create vscode user matching devcontainer convention
+RUN useradd -m -u 1000 -s /bin/bash vscode && \
+    echo "vscode ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/vscode
+
+USER vscode
+WORKDIR /home/vscode
+
+ENV PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:${PATH}"
