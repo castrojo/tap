@@ -255,6 +255,7 @@ a:hover {
   margin-bottom: 16px;
 }
 .source-note a { color: #58a6ff; }
+.ecosystem-this td { font-weight: 600; }
 </style>
 </head>
 <body>
@@ -262,7 +263,7 @@ a:hover {
   <header>
     <h1>🍺 castrojo/tap</h1>
     <div class="meta">
-      Generated 2026-03-18 00:35 UTC ·
+      Generated 2026-03-18 00:39 UTC ·
       <a href="stats.json">📊 stats.json</a> ·
       <a href="https://github.com/castrojo/tap">GitHub</a>
     </div>
@@ -295,7 +296,50 @@ a:hover {
       <div class="stat-label">Unknown</div>
     </div>
     
+    <div class="stat-card stat-current">
+      <div class="stat-value">21</div>
+      <div class="stat-label">Unique Tappers (14 days)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">47</div>
+      <div class="stat-label">Total Taps (14 days)</div>
+    </div>
+    
   </div>
+
+  
+  <h2>Tap Ecosystem</h2>
+  <p class="source-note">GitHub clone traffic · 14-day rolling window · <span style="color:#7d8590">—</span> = token lacks push access to that repo</p>
+  <table class="ecosystem-table">
+    <thead>
+      <tr>
+        <th>Tap</th>
+        <th style="text-align:right">Unique Tappers</th>
+        <th style="text-align:right">Total Taps</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="ecosystem-this">
+        <td><a href="https://github.com/castrojo/tap">castrojo/tap</a> <span class="badge badge-cask">this tap</span></td>
+        <td style="text-align:right">21</td>
+        <td style="text-align:right">47</td>
+      </tr>
+      
+      <tr>
+        <td><a href="https://github.com/ublue-os/homebrew-tap">ublue-os/homebrew-tap</a></td>
+        <td style="text-align:right">1878</td>
+        <td style="text-align:right">2241</td>
+      </tr>
+      
+      <tr>
+        <td><a href="https://github.com/ublue-os/homebrew-experimental-tap">ublue-os/homebrew-experimental-tap</a></td>
+        <td style="text-align:right">301</td>
+        <td style="text-align:right">466</td>
+      </tr>
+      
+    </tbody>
+  </table>
+  
 
   <h2>Packages</h2>
   <table>

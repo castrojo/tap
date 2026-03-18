@@ -346,6 +346,7 @@ a:hover {
   margin-bottom: 16px;
 }
 .source-note a { color: #58a6ff; }
+.ecosystem-this td { font-weight: 600; }
 </style>
 </head>
 <body>
@@ -396,6 +397,34 @@ a:hover {
     </div>
     {{end}}
   </div>
+
+  {{if .RelatedTaps}}
+  <h2>Tap Ecosystem</h2>
+  <p class="source-note">GitHub clone traffic · 14-day rolling window · <span style="color:#7d8590">—</span> = token lacks push access to that repo</p>
+  <table class="ecosystem-table">
+    <thead>
+      <tr>
+        <th>Tap</th>
+        <th style="text-align:right">Unique Tappers</th>
+        <th style="text-align:right">Total Taps</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="ecosystem-this">
+        <td><a href="{{.TapURL}}">{{.TapName}}</a> <span class="badge badge-cask">this tap</span></td>
+        <td style="text-align:right">{{if .Traffic}}{{.Traffic.Uniques}}{{else}}<span style="color:#7d8590">—</span>{{end}}</td>
+        <td style="text-align:right">{{if .Traffic}}{{.Traffic.Count}}{{else}}<span style="color:#7d8590">—</span>{{end}}</td>
+      </tr>
+      {{range .RelatedTaps}}
+      <tr>
+        <td><a href="{{.URL}}">{{.Name}}</a></td>
+        <td style="text-align:right">{{if .Traffic}}{{.Traffic.Uniques}}{{else}}<span style="color:#7d8590" title="{{.Err}}">—</span>{{end}}</td>
+        <td style="text-align:right">{{if .Traffic}}{{.Traffic.Count}}{{else}}<span style="color:#7d8590" title="{{.Err}}">—</span>{{end}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{end}}
 
   <h2>Packages</h2>
   <table>

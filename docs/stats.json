@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-18T00:35:27.050160015Z",
+  "generated_at": "2026-03-18T00:39:09.353416923Z",
   "tap_name": "castrojo/tap",
   "tap_url": "https://github.com/castrojo/tap",
   "summary": {
@@ -10,6 +10,31 @@
     "stale_count": 0,
     "unknown_count": 1
   },
+  "traffic": {
+    "count": 47,
+    "uniques": 21,
+    "window": "14 days"
+  },
+  "related_taps": [
+    {
+      "name": "ublue-os/homebrew-tap",
+      "url": "https://github.com/ublue-os/homebrew-tap",
+      "traffic": {
+        "count": 2241,
+        "uniques": 1878,
+        "window": "14 days"
+      }
+    },
+    {
+      "name": "ublue-os/homebrew-experimental-tap",
+      "url": "https://github.com/ublue-os/homebrew-experimental-tap",
+      "traffic": {
+        "count": 466,
+        "uniques": 301,
+        "window": "14 days"
+      }
+    }
+  ],
   "packages": [
     {
       "name": "quarto-cli-linux",
@@ -26,7 +51,7 @@
       "latest_version": "1.8.27",
       "is_stale": false,
       "freshness_known": true,
-      "last_updated": "2026-03-17"
+      "last_updated": "2026-02-09"
     },
     {
       "name": "quarto-linux",
@@ -43,7 +68,7 @@
       "latest_version": "1.8.27",
       "is_stale": false,
       "freshness_known": true,
-      "last_updated": "2026-03-17"
+      "last_updated": "2026-02-09"
     },
     {
       "name": "rancher-desktop-linux",
@@ -60,7 +85,7 @@
       "latest_version": "1.22.0",
       "is_stale": false,
       "freshness_known": true,
-      "last_updated": "2026-03-17"
+      "last_updated": "2026-02-09"
     },
     {
       "name": "sublime-text-linux",
@@ -74,7 +99,7 @@
       "file_path": "Casks/sublime-text-linux.rb",
       "is_stale": false,
       "freshness_known": false,
-      "last_updated": "2026-03-17"
+      "last_updated": "2026-02-09"
     }
   ],
   "os_stats": [

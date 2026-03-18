@@ -4,13 +4,14 @@ import "time"
 
 // TapStats represents statistics about the entire tap.
 type TapStats struct {
-	GeneratedAt time.Time   `json:"generated_at"`
-	TapName     string      `json:"tap_name"`
-	TapURL      string      `json:"tap_url"`
-	Summary     Summary     `json:"summary"`
-	Traffic     *TapTraffic `json:"traffic,omitempty"`
-	Packages    []Package   `json:"packages"`
-	OSStats     []OSStats   `json:"os_stats,omitempty"`
+	GeneratedAt time.Time    `json:"generated_at"`
+	TapName     string       `json:"tap_name"`
+	TapURL      string       `json:"tap_url"`
+	Summary     Summary      `json:"summary"`
+	Traffic     *TapTraffic  `json:"traffic,omitempty"`
+	RelatedTaps []RelatedTap `json:"related_taps,omitempty"`
+	Packages    []Package    `json:"packages"`
+	OSStats     []OSStats    `json:"os_stats,omitempty"`
 }
 
 // TapTraffic holds GitHub repository traffic clone data (14-day rolling window).
@@ -21,6 +22,14 @@ type TapTraffic struct {
 	Uniques int `json:"uniques"`
 	// Window describes the time range the data covers.
 	Window string `json:"window"`
+}
+
+// RelatedTap holds traffic data for a tap being compared against this one.
+type RelatedTap struct {
+	Name    string      `json:"name"`            // "owner/repo"
+	URL     string      `json:"url"`             // "https://github.com/owner/repo"
+	Traffic *TapTraffic `json:"traffic,omitempty"` // nil if unavailable
+	Err     string      `json:"error,omitempty"` // reason if traffic couldn't be fetched
 }
 
 // GeneratedAtStr returns a human-readable timestamp for templates.
