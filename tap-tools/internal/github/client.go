@@ -45,6 +45,7 @@ type Asset struct {
 	DownloadURL        string
 	Size               int64
 	BrowserDownloadURL string
+	DownloadCount      int64
 }
 
 // detectEnvironment returns the execution environment
@@ -277,6 +278,7 @@ func (c *Client) convertRelease(ghRelease *github.RepositoryRelease) *Release {
 			DownloadURL:        ghAsset.GetBrowserDownloadURL(),
 			Size:               int64(ghAsset.GetSize()),
 			BrowserDownloadURL: ghAsset.GetBrowserDownloadURL(),
+			DownloadCount:      int64(ghAsset.GetDownloadCount()),
 		})
 	}
 

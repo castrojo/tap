@@ -346,6 +346,13 @@ a:hover {
   margin-bottom: 16px;
 }
 .source-note a { color: #58a6ff; }
+.dl-count {
+  font-family: 'SF Mono', Consolas, monospace;
+  font-size: 13px;
+  color: #e6edf3;
+  white-space: nowrap;
+  text-align: right;
+}
 </style>
 </head>
 <body>
@@ -396,6 +403,7 @@ a:hover {
         <th>Tap Version</th>
         <th>Latest</th>
         <th>Status</th>
+        <th title="GitHub release asset downloads for the current version (all sources, not tap-specific)">Downloads ↓</th>
         <th>Description</th>
       </tr>
     </thead>
@@ -410,11 +418,16 @@ a:hover {
         <td><span class="version">{{.Version}}</span></td>
         <td><span class="version{{if .IsStale}} version-stale{{end}}">{{if .LatestVersion}}{{.LatestVersion}}{{else}}—{{end}}</span></td>
         <td><span class="badge badge-{{.StatusString}}">{{.StatusEmoji}} {{.StatusString}}</span></td>
+        <td class="dl-count">{{if .DownloadCount}}{{fmtCount .DownloadCount}}{{else}}<span style="color:#7d8590">—</span>{{end}}</td>
         <td>{{.Description}}</td>
       </tr>
       {{end}}
     </tbody>
   </table>
+  <p class="source-note" style="margin-top:8px">
+    ↓ Downloads = GitHub release asset downloads for the current version (all sources, not tap-specific).
+    Resets on each new release. Sorted highest → lowest.
+  </p>
 
   {{if .OSStats}}
   <h2>OS Version Distribution</h2>
@@ -481,11 +494,29 @@ func windowLabel(w string) string {
 	}
 }
 
+// fmtCount formats an int64 with comma separators (e.g. 51727 → "51,727").
+func fmtCount(n int64) string {
+	s := fmt.Sprintf("%d", n)
+	if len(s) <= 3 {
+		return s
+	}
+	// Insert commas from right to left.
+	var result []byte
+	for i, c := range []byte(s) {
+		if i > 0 && (len(s)-i)%3 == 0 {
+			result = append(result, ',')
+		}
+		result = append(result, c)
+	}
+	return string(result)
+}
+
 // RenderHTML returns the stats page as HTML bytes.
 func RenderHTML(stats *TapStats) ([]byte, error) {
 	tmpl, err := template.New("stats").Funcs(template.FuncMap{
 		"GeneratedAtStr": stats.GeneratedAtStr,
 		"windowLabel":    windowLabel,
+		"fmtCount":       fmtCount,
 	}).Parse(htmlTemplate)
 	if err != nil {
 		return nil, fmt.Errorf("parsing HTML template: %w", err)
