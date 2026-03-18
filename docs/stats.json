@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-18T00:33:38.01264127Z",
+  "generated_at": "2026-03-18T00:35:27.050160015Z",
   "tap_name": "castrojo/tap",
   "tap_url": "https://github.com/castrojo/tap",
   "summary": {
@@ -9,11 +9,6 @@
     "current_count": 3,
     "stale_count": 0,
     "unknown_count": 1
-  },
-  "traffic": {
-    "count": 47,
-    "uniques": 21,
-    "window": "14 days"
   },
   "packages": [
     {
@@ -31,7 +26,7 @@
       "latest_version": "1.8.27",
       "is_stale": false,
       "freshness_known": true,
-      "last_updated": "2026-02-09"
+      "last_updated": "2026-03-17"
     },
     {
       "name": "quarto-linux",
@@ -48,7 +43,7 @@
       "latest_version": "1.8.27",
       "is_stale": false,
       "freshness_known": true,
-      "last_updated": "2026-02-09"
+      "last_updated": "2026-03-17"
     },
     {
       "name": "rancher-desktop-linux",
@@ -65,7 +60,7 @@
       "latest_version": "1.22.0",
       "is_stale": false,
       "freshness_known": true,
-      "last_updated": "2026-02-09"
+      "last_updated": "2026-03-17"
     },
     {
       "name": "sublime-text-linux",
@@ -79,7 +74,7 @@
       "file_path": "Casks/sublime-text-linux.rb",
       "is_stale": false,
       "freshness_known": false,
-      "last_updated": "2026-02-09"
+      "last_updated": "2026-03-17"
     }
   ],
   "os_stats": [
