@@ -9,7 +9,10 @@ import (
 	"time"
 
 	"github.com/castrojo/tap-tools/internal/github"
+	"github.com/charmbracelet/lipgloss"
 )
+
+var infoStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("14"))
 
 // getTapInfoFromGit reads the git remote URL and returns (tapName, tapURL, error).
 // tapName is "owner/repo" and tapURL is "https://github.com/owner/repo".
@@ -49,8 +52,9 @@ func getTapInfoFromGit(tapDir string) (string, string, error) {
 
 // Collect gathers statistics for the tap rooted at tapDir.
 // It scans Casks/ and Formula/ for .rb files, parses each, and optionally
-// checks version freshness against upstream GitHub releases.
-func Collect(tapDir string, checkFreshness bool) (*TapStats, error) {
+// checks version freshness against upstream GitHub releases and fetches
+// Homebrew OS analytics.
+func Collect(tapDir string, checkFreshness bool, fetchOSStats bool) (*TapStats, error) {
 	tapName, tapURL, err := getTapInfoFromGit(tapDir)
 	if err != nil {
 		// Fall back to a placeholder so the rest of the output is still useful.
@@ -99,6 +103,18 @@ func Collect(tapDir string, checkFreshness bool) (*TapStats, error) {
 
 	stats.Packages = packages
 	stats.Summary = computeSummary(packages)
+
+	// Fetch Homebrew OS version analytics (30d / 90d / 365d).
+	if fetchOSStats {
+		fmt.Fprintln(os.Stderr, infoStyle.Render("→ Fetching Homebrew OS analytics…"))
+		osStats, err := FetchOSStats(10)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "⚠️  Could not fetch OS stats from formulae.brew.sh: %v\n", err)
+		} else {
+			stats.OSStats = osStats
+		}
+	}
+
 	return stats, nil
 }
 

@@ -4,11 +4,12 @@ import "time"
 
 // TapStats represents statistics about the entire tap.
 type TapStats struct {
-	GeneratedAt time.Time `json:"generated_at"`
-	TapName     string    `json:"tap_name"`
-	TapURL      string    `json:"tap_url"`
-	Summary     Summary   `json:"summary"`
-	Packages    []Package `json:"packages"`
+	GeneratedAt time.Time  `json:"generated_at"`
+	TapName     string     `json:"tap_name"`
+	TapURL      string     `json:"tap_url"`
+	Summary     Summary    `json:"summary"`
+	Packages    []Package  `json:"packages"`
+	OSStats     []OSStats  `json:"os_stats,omitempty"`
 }
 
 // GeneratedAtStr returns a human-readable timestamp for templates.

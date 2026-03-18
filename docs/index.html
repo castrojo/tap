@@ -171,6 +171,90 @@ a:hover {
   font-size: 12px;
   color: #7d8590;
 }
+.os-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+@media (max-width: 900px) {
+  .os-grid { grid-template-columns: 1fr; }
+}
+.os-col-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.os-window-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e6edf3;
+}
+.os-dates {
+  font-size: 11px;
+  color: #7d8590;
+}
+.os-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  overflow: hidden;
+  font-size: 13px;
+}
+.os-table th {
+  background: #21262d;
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: #7d8590;
+  border-bottom: 1px solid #30363d;
+  white-space: nowrap;
+}
+.os-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid #21262d;
+  vertical-align: middle;
+}
+.os-table tr:last-child td { border-bottom: none; }
+.os-table tr:hover td { background: #1c2128; }
+.os-rank {
+  color: #7d8590;
+  font-size: 11px;
+  width: 20px;
+  text-align: right;
+  padding-right: 6px !important;
+}
+.os-name { color: #e6edf3; }
+.os-pct {
+  color: #7d8590;
+  font-size: 11px;
+  white-space: nowrap;
+  text-align: right;
+}
+.os-bar-cell { width: 60px; padding: 0 8px !important; }
+.os-bar-track {
+  background: #21262d;
+  border-radius: 2px;
+  height: 6px;
+  overflow: hidden;
+}
+.os-bar-fill {
+  background: #388bfd;
+  height: 6px;
+  border-radius: 2px;
+}
+.source-note {
+  font-size: 12px;
+  color: #7d8590;
+  margin-bottom: 16px;
+}
+.source-note a { color: #58a6ff; }
 </style>
 </head>
 <body>
@@ -178,7 +262,7 @@ a:hover {
   <header>
     <h1>🍺 castrojo/tap</h1>
     <div class="meta">
-      Generated 2026-03-18 00:04 UTC ·
+      Generated 2026-03-18 00:15 UTC ·
       <a href="stats.json">📊 stats.json</a> ·
       <a href="https://github.com/castrojo/tap">GitHub</a>
     </div>
@@ -276,6 +360,407 @@ a:hover {
       
     </tbody>
   </table>
+
+  
+  <h2>OS Version Distribution</h2>
+  <p class="source-note">
+    Data from <a href="https://formulae.brew.sh/analytics/os-version/30d/">Homebrew Analytics</a> ·
+    Top 10 per window · Bars normalised to #1 entry
+  </p>
+  <div class="os-grid">
+    
+    <div class="os-col">
+      <div class="os-col-header">
+        <span class="os-window-label">Last 30 Days</span>
+        <span class="os-dates">2026-02-15 – 2026-03-17</span>
+      </div>
+      <table class="os-table">
+        <thead>
+          <tr>
+            <th class="os-rank">#</th>
+            <th>OS</th>
+            <th></th>
+            <th class="os-pct">%</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+          <tr>
+            <td class="os-rank">1</td>
+            <td class="os-name">macOS Tahoe (26)</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:100%"></div>
+              </div>
+            </td>
+            <td class="os-pct">34.65%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">2</td>
+            <td class="os-name">macOS Sequoia (15)</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:69%"></div>
+              </div>
+            </td>
+            <td class="os-pct">24.21%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">3</td>
+            <td class="os-name">Ubuntu 24.04 LTS</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:46%"></div>
+              </div>
+            </td>
+            <td class="os-pct">15.97%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">4</td>
+            <td class="os-name">macOS Sonoma (14)</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:22%"></div>
+              </div>
+            </td>
+            <td class="os-pct">7.72%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">5</td>
+            <td class="os-name">Ubuntu 22.04 LTS</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:12%"></div>
+              </div>
+            </td>
+            <td class="os-pct">4.29%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">6</td>
+            <td class="os-name">Debian GNU/Linux 13</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:7%"></div>
+              </div>
+            </td>
+            <td class="os-pct">2.54%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">7</td>
+            <td class="os-name">macOS Monterey (12)</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:5%"></div>
+              </div>
+            </td>
+            <td class="os-pct">1.87%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">8</td>
+            <td class="os-name">macOS Ventura (13)</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:4%"></div>
+              </div>
+            </td>
+            <td class="os-pct">1.71%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">9</td>
+            <td class="os-name">Bazzite</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:3%"></div>
+              </div>
+            </td>
+            <td class="os-pct">1.05%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">10</td>
+            <td class="os-name">Debian GNU/Linux 12</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:2%"></div>
+              </div>
+            </td>
+            <td class="os-pct">1%</td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="os-col">
+      <div class="os-col-header">
+        <span class="os-window-label">Last 90 Days</span>
+        <span class="os-dates">2025-12-17 – 2026-03-17</span>
+      </div>
+      <table class="os-table">
+        <thead>
+          <tr>
+            <th class="os-rank">#</th>
+            <th>OS</th>
+            <th></th>
+            <th class="os-pct">%</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+          <tr>
+            <td class="os-rank">1</td>
+            <td class="os-name">macOS Tahoe (26)</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:100%"></div>
+              </div>
+            </td>
+            <td class="os-pct">33.12%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">2</td>
+            <td class="os-name">macOS Sequoia (15)</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:81%"></div>
+              </div>
+            </td>
+            <td class="os-pct">27.05%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">3</td>
+            <td class="os-name">Ubuntu 24.04 LTS</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:42%"></div>
+              </div>
+            </td>
+            <td class="os-pct">14.24%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">4</td>
+            <td class="os-name">macOS Sonoma (14)</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:26%"></div>
+              </div>
+            </td>
+            <td class="os-pct">8.83%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">5</td>
+            <td class="os-name">Ubuntu 22.04 LTS</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:12%"></div>
+              </div>
+            </td>
+            <td class="os-pct">4.25%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">6</td>
+            <td class="os-name">macOS Monterey (12)</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:5%"></div>
+              </div>
+            </td>
+            <td class="os-pct">1.87%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">7</td>
+            <td class="os-name">macOS Ventura (13)</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:5%"></div>
+              </div>
+            </td>
+            <td class="os-pct">1.75%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">8</td>
+            <td class="os-name">Debian GNU/Linux 13</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:5%"></div>
+              </div>
+            </td>
+            <td class="os-pct">1.66%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">9</td>
+            <td class="os-name">Bazzite</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:3%"></div>
+              </div>
+            </td>
+            <td class="os-pct">1.24%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">10</td>
+            <td class="os-name">Debian GNU/Linux 12</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:2%"></div>
+              </div>
+            </td>
+            <td class="os-pct">0.84%</td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="os-col">
+      <div class="os-col-header">
+        <span class="os-window-label">Last 365 Days</span>
+        <span class="os-dates">2025-03-17 – 2026-03-17</span>
+      </div>
+      <table class="os-table">
+        <thead>
+          <tr>
+            <th class="os-rank">#</th>
+            <th>OS</th>
+            <th></th>
+            <th class="os-pct">%</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+          <tr>
+            <td class="os-rank">1</td>
+            <td class="os-name">macOS Sequoia (15)</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:100%"></div>
+              </div>
+            </td>
+            <td class="os-pct">41.76%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">2</td>
+            <td class="os-name">macOS Tahoe (26)</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:37%"></div>
+              </div>
+            </td>
+            <td class="os-pct">15.50%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">3</td>
+            <td class="os-name">macOS Sonoma (14)</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:34%"></div>
+              </div>
+            </td>
+            <td class="os-pct">14.22%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">4</td>
+            <td class="os-name">Ubuntu 24.04 LTS</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:26%"></div>
+              </div>
+            </td>
+            <td class="os-pct">10.95%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">5</td>
+            <td class="os-name">macOS Ventura (13)</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:10%"></div>
+              </div>
+            </td>
+            <td class="os-pct">4.19%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">6</td>
+            <td class="os-name">Ubuntu 22.04 LTS</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:9%"></div>
+              </div>
+            </td>
+            <td class="os-pct">4.01%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">7</td>
+            <td class="os-name">macOS Monterey (12)</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:5%"></div>
+              </div>
+            </td>
+            <td class="os-pct">2.18%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">8</td>
+            <td class="os-name">Debian GNU/Linux 12</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:1%"></div>
+              </div>
+            </td>
+            <td class="os-pct">0.72%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">9</td>
+            <td class="os-name">Bazzite</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:1%"></div>
+              </div>
+            </td>
+            <td class="os-pct">0.67%</td>
+          </tr>
+          
+          <tr>
+            <td class="os-rank">10</td>
+            <td class="os-name">Ubuntu 20.04 LTS</td>
+            <td class="os-bar-cell">
+              <div class="os-bar-track">
+                <div class="os-bar-fill" style="width:1%"></div>
+              </div>
+            </td>
+            <td class="os-pct">0.63%</td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </div>
+    
+  </div>
+  
 
   <div class="footer">
     Generated by <a href="https://github.com/castrojo/tap/tree/main/tap-tools">tap-stats</a> ·
