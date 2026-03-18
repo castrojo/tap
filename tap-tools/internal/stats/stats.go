@@ -48,6 +48,11 @@ type Package struct {
 	IsStale        bool   `json:"is_stale"`
 	FreshnessKnown bool   `json:"freshness_known"`
 
+	// DownloadCount is the GitHub release asset download count for the asset
+	// that matches this package's URL. It serves as an install-count proxy.
+	// Zero means no data is available (non-GitHub packages, or not yet fetched).
+	DownloadCount int64 `json:"download_count"`
+
 	LastUpdated string `json:"last_updated,omitempty"`
 }
 

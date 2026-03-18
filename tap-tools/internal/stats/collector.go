@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -80,7 +81,7 @@ func Collect(tapDir string, checkFreshness bool, fetchOSStats bool) (*TapStats, 
 		packages[i].LastUpdated = gitLastModified(tapDir, packages[i].FilePath)
 	}
 
-	// Check version freshness via GitHub API.
+	// Check version freshness and upstream download counts via GitHub API.
 	if checkFreshness {
 		client, err := github.NewClientWithTokenCheck()
 		if err != nil {
@@ -97,9 +98,17 @@ func Collect(tapDir string, checkFreshness bool, fetchOSStats bool) (*TapStats, 
 				packages[i].LatestVersion = NormalizeVersion(latest.TagName)
 				packages[i].FreshnessKnown = true
 				packages[i].IsStale = packages[i].LatestVersion != NormalizeVersion(packages[i].Version)
+
+				// Match the asset our cask downloads and capture its download count.
+				packages[i].DownloadCount = matchAssetDownloads(packages[i].URL, packages[i].Version, latest.Assets)
 			}
 		}
 	}
+
+	// Sort packages by download count descending so most-used floats to the top.
+	sort.Slice(packages, func(i, j int) bool {
+		return packages[i].DownloadCount > packages[j].DownloadCount
+	})
 
 	stats.Packages = packages
 	stats.Summary = computeSummary(packages)
@@ -212,4 +221,32 @@ func computeSummary(packages []Package) Summary {
 		}
 	}
 	return s
+}
+
+// matchAssetDownloads finds the release asset that matches the cask's download URL
+// and returns its download_count. Returns 0 if no match is found.
+//
+// The cask URL contains Ruby interpolation like "#{version}", which we substitute
+// with the actual version string before extracting the filename for matching.
+func matchAssetDownloads(rawURL, version string, assets []*github.Asset) int64 {
+	if rawURL == "" || len(assets) == 0 {
+		return 0
+	}
+
+	// Replace Ruby interpolation with the real version.
+	resolved := strings.ReplaceAll(rawURL, "#{version}", version)
+
+	// Extract just the filename from the resolved URL.
+	parts := strings.Split(resolved, "/")
+	if len(parts) == 0 {
+		return 0
+	}
+	wantName := parts[len(parts)-1]
+
+	for _, a := range assets {
+		if a.Name == wantName {
+			return a.DownloadCount
+		}
+	}
+	return 0
 }
