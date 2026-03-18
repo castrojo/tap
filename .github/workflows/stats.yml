@@ -23,9 +23,14 @@ jobs:
 
       - name: Generate statistics
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # GITHUB_TOKEN provides push access to this repo's traffic.
+          # For comparison tap traffic (ublue-os/*), a PAT with push access
+          # to those repos must be stored as GH_TRAFFIC_TOKEN secret.
+          GITHUB_TOKEN: ${{ secrets.GH_TRAFFIC_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
-          ./tap-tools/tap-stats generate --output docs/
+          ./tap-tools/tap-stats generate --output docs/ \
+            --compare ublue-os/homebrew-tap \
+            --compare ublue-os/homebrew-experimental-tap
 
       - name: Commit generated files
         run: |

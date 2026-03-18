@@ -54,8 +54,9 @@ func getTapInfoFromGit(tapDir string) (string, string, error) {
 // Collect gathers statistics for the tap rooted at tapDir.
 // It scans Casks/ and Formula/ for .rb files, parses each, and optionally
 // checks version freshness against upstream GitHub releases and fetches
-// Homebrew OS analytics.
-func Collect(tapDir string, checkFreshness bool, fetchOSStats bool) (*TapStats, error) {
+// Homebrew OS analytics. compareTaps is a list of "owner/repo" strings
+// whose traffic will be fetched and included for comparison.
+func Collect(tapDir string, checkFreshness bool, fetchOSStats bool, compareTaps []string) (*TapStats, error) {
 	tapName, tapURL, err := getTapInfoFromGit(tapDir)
 	if err != nil {
 		// Fall back to a placeholder so the rest of the output is still useful.
@@ -115,6 +116,12 @@ func Collect(tapDir string, checkFreshness bool, fetchOSStats bool) (*TapStats, 
 						Window:  "14 days",
 					}
 				}
+			}
+
+			// Comparison tap traffic.
+			if len(compareTaps) > 0 {
+				fmt.Fprintln(os.Stderr, infoStyle.Render("→ Fetching comparison tap traffic…"))
+				stats.RelatedTaps = fetchRelatedTraffic(compareTaps, client)
 			}
 		}
 	}
@@ -239,3 +246,33 @@ func computeSummary(packages []Package) Summary {
 
 
 
+
+// fetchRelatedTraffic fetches clone traffic for a list of "owner/repo" strings.
+// Errors are captured per-tap rather than aborting the whole collection.
+func fetchRelatedTraffic(repos []string, client *github.Client) []RelatedTap {
+results := make([]RelatedTap, 0, len(repos))
+for _, repo := range repos {
+parts := strings.SplitN(repo, "/", 2)
+rt := RelatedTap{
+Name: repo,
+URL:  "https://github.com/" + repo,
+}
+if len(parts) != 2 {
+rt.Err = "invalid repo format (want owner/repo)"
+results = append(results, rt)
+continue
+}
+count, uniques, err := client.GetTrafficClones(parts[0], parts[1])
+if err != nil {
+rt.Err = err.Error()
+} else {
+rt.Traffic = &TapTraffic{
+Count:   count,
+Uniques: uniques,
+Window:  "14 days",
+}
+}
+results = append(results, rt)
+}
+return results
+}

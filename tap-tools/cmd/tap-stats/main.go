@@ -44,11 +44,12 @@ Examples:
 }
 
 var (
-	flagTapDir    string
-	flagOutput    string
-	flagFormat    string
-	flagNoFresh   bool
-	flagNoOSStats bool
+	flagTapDir     string
+	flagOutput     string
+	flagFormat     string
+	flagNoFresh    bool
+	flagNoOSStats  bool
+	flagCompareTaps []string
 )
 
 func init() {
@@ -57,6 +58,7 @@ func init() {
 	generateCmd.Flags().StringVar(&flagFormat, "format", "terminal", "Output format: terminal | json | html")
 	generateCmd.Flags().BoolVar(&flagNoFresh, "no-freshness", false, "Skip upstream version freshness check")
 	generateCmd.Flags().BoolVar(&flagNoOSStats, "no-os-stats", false, "Skip fetching Homebrew OS analytics from formulae.brew.sh")
+	generateCmd.Flags().StringArrayVar(&flagCompareTaps, "compare", nil, "Additional tap (owner/repo) to compare traffic against; may be repeated")
 
 	rootCmd.AddCommand(generateCmd)
 }
@@ -75,7 +77,7 @@ func runGenerate(_ *cobra.Command, _ []string) error {
 	}
 
 	fmt.Fprintln(os.Stderr, infoStyle.Render("→ Collecting tap statistics…"))
-	tapStats, err := stats.Collect(tapDir, !flagNoFresh, !flagNoOSStats)
+	tapStats, err := stats.Collect(tapDir, !flagNoFresh, !flagNoOSStats, flagCompareTaps)
 	if err != nil {
 		return fmt.Errorf("collecting statistics: %w", err)
 	}
