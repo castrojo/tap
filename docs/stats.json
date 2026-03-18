@@ -1,0 +1,80 @@
+{
+  "generated_at": "2026-03-18T00:01:45.312794571Z",
+  "tap_name": "castrojo/tap",
+  "tap_url": "https://github.com/castrojo/tap",
+  "summary": {
+    "total_packages": 4,
+    "total_casks": 4,
+    "total_formulas": 0,
+    "current_count": 3,
+    "stale_count": 0,
+    "unknown_count": 1
+  },
+  "packages": [
+    {
+      "name": "quarto-cli-linux",
+      "display_name": "Quarto",
+      "type": "cask",
+      "version": "1.8.27",
+      "sha256": "bdf689b5589789a1f21d89c3b83d78ed02a97914dd702e617294f2cc1ea7387d",
+      "url": "https://github.com/quarto-dev/quarto-cli/releases/download/v#{version}/quarto-#{version}-linux-amd64.tar.gz",
+      "description": "Open-source scientific and technical publishing system built on Pandoc",
+      "homepage": "https://quarto.org/",
+      "file_path": "Casks/quarto-cli-linux.rb",
+      "source_owner": "quarto-dev",
+      "source_repo": "quarto-cli",
+      "latest_version": "1.8.27",
+      "is_stale": false,
+      "freshness_known": true,
+      "last_updated": "2026-02-09"
+    },
+    {
+      "name": "quarto-linux",
+      "display_name": "Quarto",
+      "type": "cask",
+      "version": "1.8.27",
+      "sha256": "bdf689b5589789a1f21d89c3b83d78ed02a97914dd702e617294f2cc1ea7387d",
+      "url": "https://github.com/quarto-dev/quarto-cli/releases/download/v#{version}/quarto-#{version}-linux-amd64.tar.gz",
+      "description": "Open-source scientific and technical publishing system built on Pandoc",
+      "homepage": "https://quarto.org/",
+      "file_path": "Casks/quarto-linux.rb",
+      "source_owner": "quarto-dev",
+      "source_repo": "quarto-cli",
+      "latest_version": "1.8.27",
+      "is_stale": false,
+      "freshness_known": true,
+      "last_updated": "2026-02-09"
+    },
+    {
+      "name": "rancher-desktop-linux",
+      "display_name": "rancher-desktop",
+      "type": "cask",
+      "version": "v1.22.0",
+      "sha256": "081bc82ac988b1467f6445dddb483395ca7b1aac2164594fd5f4e2cb7344ba6d",
+      "url": "https://github.com/rancher-sandbox/rancher-desktop/releases/download/v1.22.0/rancher-desktop-linux-v1.22.0.zip",
+      "description": "Container Management and Kubernetes on the Desktop",
+      "homepage": "https://rancherdesktop.io/",
+      "file_path": "Casks/rancher-desktop-linux.rb",
+      "source_owner": "rancher-sandbox",
+      "source_repo": "rancher-desktop",
+      "latest_version": "1.22.0",
+      "is_stale": false,
+      "freshness_known": true,
+      "last_updated": "2026-02-09"
+    },
+    {
+      "name": "sublime-text-linux",
+      "display_name": "Sublime Text",
+      "type": "cask",
+      "version": "4200",
+      "sha256": "36f69c551ad18ee46002be4d9c523fe545d93b67fea67beea731e724044b469f",
+      "url": "https://download.sublimetext.com/sublime_text_build_#{version}_x64.tar.xz",
+      "description": "Sophisticated text editor for code, markup and prose",
+      "homepage": "https://www.sublimetext.com/",
+      "file_path": "Casks/sublime-text-linux.rb",
+      "is_stale": false,
+      "freshness_known": false,
+      "last_updated": "2026-02-09"
+    }
+  ]
+}

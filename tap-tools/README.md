@@ -57,6 +57,15 @@ Go CLI tools to replace bash scripts for generating Homebrew formulas and casks 
 - Integration with CI workflow for automated testing
 - Retry logic for transient failures
 
+**Phase 7: Statistics** ✅ COMPLETE
+- `tap-stats` CLI tool implemented
+- Package inventory from Casks/ and Formula/ directories
+- Version freshness check against upstream GitHub releases
+- Terminal table output with colour-coded status
+- JSON output for machine consumption (`docs/stats.json`)
+- HTML output for GitHub Pages (`docs/index.html`)
+- GitHub Actions workflow for daily auto-generation
+
 ## Project Structure
 
 ```
@@ -66,7 +75,8 @@ tap-tools/
 │   ├── tap-cask/          # ✅ Cask generator
 │   ├── tap-issue/         # ✅ Issue processor
 │   ├── tap-validate/      # ✅ Validator
-│   └── tap-test/          # ✅ Smoke tester
+│   ├── tap-test/          # ✅ Smoke tester
+│   └── tap-stats/         # ✅ Statistics generator
 ├── internal/
 │   ├── github/            # ✅ GitHub API client
 │   ├── checksum/          # ✅ SHA256 verification
@@ -75,7 +85,8 @@ tap-tools/
 │   ├── desktop/           # ✅ Desktop integration
 │   ├── buildsystem/       # ✅ Build system detection
 │   ├── validate/          # ✅ Validation package
-│   └── issues/            # ✅ Issue parsing & PR creation
+│   ├── issues/            # ✅ Issue parsing & PR creation
+│   └── stats/             # ✅ Statistics collection & rendering
 ├── pkg/
 │   └── templates/         # Embedded templates (planned)
 ├── go.mod
@@ -284,6 +295,39 @@ tap-tools/
 # Git Details:
 #   Branch:      package-request-42-ripgrep
 #   Commit:      feat: add ripgrep formula (closes #42)
+```
+
+**Statistics:**
+```bash
+# Terminal table with freshness check
+./tap-stats generate
+
+# Write docs/stats.json and docs/index.html
+./tap-stats generate --output docs/
+
+# Emit raw JSON to stdout
+./tap-stats generate --format json
+
+# Skip upstream freshness check (faster, no API calls)
+./tap-stats generate --no-freshness
+
+# Output:
+# → Collecting tap statistics…
+# 🍺 castrojo/homebrew-tap — Statistics
+#   Generated: 2026-03-17 23:48 UTC
+#
+# Summary
+#   Total packages : 4 (casks: 4, formulas: 0)
+#   Up to date     : 3
+#   Stale          : 0
+#   Unknown        : 1
+#
+# Packages
+#   NAME                   TYPE   VERSION   LATEST    DESCRIPTION
+#   ─────────────────────────────────────────────────────────────
+# ✅  quarto-cli-linux      cask   1.8.27    1.8.27    Open-source scientific…
+# ✅  rancher-desktop-linux cask   v1.22.0   1.22.0    Container Management…
+# ❓  sublime-text-linux    cask   4200      —         Sophisticated text…
 ```
 
 ## Testing
