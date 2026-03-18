@@ -4,12 +4,23 @@ import "time"
 
 // TapStats represents statistics about the entire tap.
 type TapStats struct {
-	GeneratedAt time.Time  `json:"generated_at"`
-	TapName     string     `json:"tap_name"`
-	TapURL      string     `json:"tap_url"`
-	Summary     Summary    `json:"summary"`
-	Packages    []Package  `json:"packages"`
-	OSStats     []OSStats  `json:"os_stats,omitempty"`
+	GeneratedAt time.Time   `json:"generated_at"`
+	TapName     string      `json:"tap_name"`
+	TapURL      string      `json:"tap_url"`
+	Summary     Summary     `json:"summary"`
+	Traffic     *TapTraffic `json:"traffic,omitempty"`
+	Packages    []Package   `json:"packages"`
+	OSStats     []OSStats   `json:"os_stats,omitempty"`
+}
+
+// TapTraffic holds GitHub repository traffic clone data (14-day rolling window).
+type TapTraffic struct {
+	// Count is the total number of git clone/tap operations in the past 14 days.
+	Count int `json:"count"`
+	// Uniques is the number of unique IP addresses that cloned/tapped in the past 14 days.
+	Uniques int `json:"uniques"`
+	// Window describes the time range the data covers.
+	Window string `json:"window"`
 }
 
 // GeneratedAtStr returns a human-readable timestamp for templates.
@@ -47,11 +58,6 @@ type Package struct {
 	LatestVersion  string `json:"latest_version,omitempty"`
 	IsStale        bool   `json:"is_stale"`
 	FreshnessKnown bool   `json:"freshness_known"`
-
-	// DownloadCount is the GitHub release asset download count for the asset
-	// that matches this package's URL. It serves as an install-count proxy.
-	// Zero means no data is available (non-GitHub packages, or not yet fetched).
-	DownloadCount int64 `json:"download_count"`
 
 	LastUpdated string `json:"last_updated,omitempty"`
 }

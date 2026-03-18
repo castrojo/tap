@@ -318,3 +318,16 @@ func (c *Client) GetRepoFiles(owner, repo string) ([]string, error) {
 
 	return files, nil
 }
+
+// GetTrafficClones fetches the repository clone traffic for the past 14 days.
+// Returns total clone count and unique cloner count.
+// Requires a token with push access to the repository.
+func (c *Client) GetTrafficClones(owner, repo string) (count, uniques int, err error) {
+c.CheckRateLimit()
+
+clones, _, err := c.gh.Repositories.ListTrafficClones(c.ctx, owner, repo, nil)
+if err != nil {
+return 0, 0, fmt.Errorf("fetching traffic clones for %s/%s: %w", owner, repo, err)
+}
+return clones.GetCount(), clones.GetUniques(), nil
+}

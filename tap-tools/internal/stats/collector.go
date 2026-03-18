@@ -81,12 +81,13 @@ func Collect(tapDir string, checkFreshness bool, fetchOSStats bool) (*TapStats, 
 		packages[i].LastUpdated = gitLastModified(tapDir, packages[i].FilePath)
 	}
 
-	// Check version freshness and upstream download counts via GitHub API.
+	// Check version freshness and fetch tap traffic via GitHub API.
 	if checkFreshness {
 		client, err := github.NewClientWithTokenCheck()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "⚠️  Skipping freshness check: %v\n", err)
 		} else {
+			// Per-package freshness checks.
 			for i := range packages {
 				if packages[i].SourceOwner == "" || packages[i].SourceRepo == "" {
 					continue
@@ -98,16 +99,29 @@ func Collect(tapDir string, checkFreshness bool, fetchOSStats bool) (*TapStats, 
 				packages[i].LatestVersion = NormalizeVersion(latest.TagName)
 				packages[i].FreshnessKnown = true
 				packages[i].IsStale = packages[i].LatestVersion != NormalizeVersion(packages[i].Version)
+			}
 
-				// Match the asset our cask downloads and capture its download count.
-				packages[i].DownloadCount = matchAssetDownloads(packages[i].URL, packages[i].Version, latest.Assets)
+			// Tap-level traffic: how many unique IPs cloned/tapped this repo.
+			parts := strings.SplitN(tapName, "/", 2)
+			if len(parts) == 2 {
+				fmt.Fprintln(os.Stderr, infoStyle.Render("→ Fetching tap traffic…"))
+				count, uniques, err := client.GetTrafficClones(parts[0], parts[1])
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "⚠️  Could not fetch tap traffic: %v\n", err)
+				} else {
+					stats.Traffic = &TapTraffic{
+						Count:   count,
+						Uniques: uniques,
+						Window:  "14 days",
+					}
+				}
 			}
 		}
 	}
 
-	// Sort packages by download count descending so most-used floats to the top.
+	// Sort packages alphabetically by name.
 	sort.Slice(packages, func(i, j int) bool {
-		return packages[i].DownloadCount > packages[j].DownloadCount
+		return packages[i].Name < packages[j].Name
 	})
 
 	stats.Packages = packages
@@ -223,30 +237,5 @@ func computeSummary(packages []Package) Summary {
 	return s
 }
 
-// matchAssetDownloads finds the release asset that matches the cask's download URL
-// and returns its download_count. Returns 0 if no match is found.
-//
-// The cask URL contains Ruby interpolation like "#{version}", which we substitute
-// with the actual version string before extracting the filename for matching.
-func matchAssetDownloads(rawURL, version string, assets []*github.Asset) int64 {
-	if rawURL == "" || len(assets) == 0 {
-		return 0
-	}
 
-	// Replace Ruby interpolation with the real version.
-	resolved := strings.ReplaceAll(rawURL, "#{version}", version)
 
-	// Extract just the filename from the resolved URL.
-	parts := strings.Split(resolved, "/")
-	if len(parts) == 0 {
-		return 0
-	}
-	wantName := parts[len(parts)-1]
-
-	for _, a := range assets {
-		if a.Name == wantName {
-			return a.DownloadCount
-		}
-	}
-	return 0
-}
