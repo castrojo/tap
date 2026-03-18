@@ -11,14 +11,58 @@ import (
 	"github.com/castrojo/tap-tools/internal/github"
 )
 
+// getTapInfoFromGit reads the git remote URL and returns (tapName, tapURL, error).
+// tapName is "owner/repo" and tapURL is "https://github.com/owner/repo".
+func getTapInfoFromGit(tapDir string) (string, string, error) {
+	cmd := exec.Command("git", "-C", tapDir, "config", "--get", "remote.origin.url")
+	out, err := cmd.Output()
+	if err != nil {
+		return "", "", fmt.Errorf("reading git remote: %w", err)
+	}
+	raw := strings.TrimSpace(string(out))
+
+	// Handle SSH format: git@github.com:owner/repo.git
+	if strings.HasPrefix(raw, "git@github.com:") {
+		path := strings.TrimPrefix(raw, "git@github.com:")
+		path = strings.TrimSuffix(path, ".git")
+		parts := strings.SplitN(path, "/", 2)
+		if len(parts) == 2 {
+			tapName := parts[0] + "/" + parts[1]
+			return tapName, "https://github.com/" + tapName, nil
+		}
+	}
+
+	// Handle HTTPS format: https://github.com/owner/repo[.git]
+	if strings.Contains(raw, "github.com/") {
+		idx := strings.Index(raw, "github.com/")
+		path := raw[idx+len("github.com/"):]
+		path = strings.TrimSuffix(path, ".git")
+		parts := strings.SplitN(path, "/", 2)
+		if len(parts) == 2 {
+			tapName := parts[0] + "/" + parts[1]
+			return tapName, "https://github.com/" + tapName, nil
+		}
+	}
+
+	return "", "", fmt.Errorf("could not parse GitHub remote from %q", raw)
+}
+
 // Collect gathers statistics for the tap rooted at tapDir.
 // It scans Casks/ and Formula/ for .rb files, parses each, and optionally
 // checks version freshness against upstream GitHub releases.
 func Collect(tapDir string, checkFreshness bool) (*TapStats, error) {
+	tapName, tapURL, err := getTapInfoFromGit(tapDir)
+	if err != nil {
+		// Fall back to a placeholder so the rest of the output is still useful.
+		fmt.Fprintf(os.Stderr, "⚠️  Could not detect tap info from git remote: %v\n", err)
+		tapName = "unknown/tap"
+		tapURL = ""
+	}
+
 	stats := &TapStats{
 		GeneratedAt: time.Now().UTC(),
-		TapName:     "castrojo/homebrew-tap",
-		TapURL:      "https://github.com/castrojo/homebrew-tap",
+		TapName:     tapName,
+		TapURL:      tapURL,
 	}
 
 	// Discover packages.
@@ -95,7 +139,14 @@ func scanDirectory(tapDir string) ([]Package, error) {
 				continue
 			}
 
-			pkg, err := ParseRubyFile(string(content), filePath)
+			// Use a path relative to the tap root so the JSON output doesn't
+			// expose the user's local directory structure.
+			relPath, err := filepath.Rel(tapDir, filePath)
+			if err != nil {
+				relPath = filePath // shouldn't happen, but safe fallback
+			}
+
+			pkg, err := ParseRubyFile(string(content), relPath)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "⚠️  Could not parse %s: %v\n", filePath, err)
 				continue

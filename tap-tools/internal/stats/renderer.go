@@ -96,42 +96,172 @@ const htmlTemplate = `<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{.TapName}} — Statistics</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
-  background:#0d1117;color:#e6edf3;line-height:1.5;min-height:100vh}
-.container{max-width:1200px;margin:0 auto;padding:32px 16px}
-header{border-bottom:1px solid #30363d;padding-bottom:16px;margin-bottom:24px}
-h1{font-size:24px;font-weight:600;color:#e6edf3}
-h2{font-size:16px;font-weight:600;margin:28px 0 12px;color:#e6edf3;text-transform:uppercase;
-  letter-spacing:.5px;font-size:12px;color:#7d8590}
-.meta{color:#7d8590;font-size:13px;margin-top:4px}
-.meta a{color:#58a6ff;text-decoration:none}.meta a:hover{text-decoration:underline}
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:32px}
-.stat-card{background:#161b22;border:1px solid #30363d;border-radius:6px;padding:16px 20px}
-.stat-value{font-size:28px;font-weight:700;color:#e6edf3;line-height:1}
-.stat-label{font-size:12px;color:#7d8590;margin-top:6px}
-.stat-current .stat-value{color:#3fb950}
-.stat-stale .stat-value{color:#d29922}
-table{width:100%;border-collapse:collapse;background:#161b22;border:1px solid #30363d;
-  border-radius:6px;overflow:hidden;font-size:14px}
-th{background:#21262d;padding:10px 16px;text-align:left;font-size:11px;font-weight:600;
-  text-transform:uppercase;letter-spacing:.5px;color:#7d8590;border-bottom:1px solid #30363d;
-  white-space:nowrap}
-td{padding:10px 16px;border-bottom:1px solid #21262d;vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:#1c2128}
-.pkg-name{font-weight:500;color:#e6edf3}
-.pkg-id{font-size:11px;color:#7d8590;font-family:'SF Mono',Consolas,monospace}
-.badge{display:inline-block;padding:1px 8px;border-radius:12px;font-size:11px;font-weight:500}
-.badge-current{background:#1f4429;color:#3fb950}
-.badge-stale{background:#3d2b00;color:#d29922}
-.badge-unknown{background:#21262d;color:#7d8590}
-.badge-cask{background:#1b2d47;color:#58a6ff}
-.badge-formula{background:#2d1b47;color:#a855f7}
-.version{font-family:'SF Mono',Consolas,monospace;font-size:12px;color:#e6edf3}
-.version-stale{color:#d29922}
-a{color:#58a6ff;text-decoration:none}a:hover{text-decoration:underline}
-.footer{margin-top:32px;padding-top:16px;border-top:1px solid #30363d;font-size:12px;color:#7d8590}
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  background: #0d1117;
+  color: #e6edf3;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+header {
+  border-bottom: 1px solid #30363d;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #e6edf3;
+}
+h2 {
+  font-weight: 600;
+  margin: 28px 0 12px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  font-size: 12px;
+  color: #7d8590;
+}
+.meta {
+  color: #7d8590;
+  font-size: 13px;
+  margin-top: 4px;
+}
+.meta a {
+  color: #58a6ff;
+  text-decoration: none;
+}
+.meta a:hover {
+  text-decoration: underline;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 32px;
+}
+.stat-card {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 16px 20px;
+}
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #e6edf3;
+  line-height: 1;
+}
+.stat-label {
+  font-size: 12px;
+  color: #7d8590;
+  margin-top: 6px;
+}
+.stat-current .stat-value {
+  color: #3fb950;
+}
+.stat-stale .stat-value {
+  color: #d29922;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  overflow: hidden;
+  font-size: 14px;
+}
+th {
+  background: #21262d;
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: #7d8590;
+  border-bottom: 1px solid #30363d;
+  white-space: nowrap;
+}
+td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #21262d;
+  vertical-align: middle;
+}
+tr:last-child td {
+  border-bottom: none;
+}
+tr:hover td {
+  background: #1c2128;
+}
+.pkg-name {
+  font-weight: 500;
+  color: #e6edf3;
+}
+.pkg-id {
+  font-size: 11px;
+  color: #7d8590;
+  font-family: 'SF Mono', Consolas, monospace;
+}
+.badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.badge-current {
+  background: #1f4429;
+  color: #3fb950;
+}
+.badge-stale {
+  background: #3d2b00;
+  color: #d29922;
+}
+.badge-unknown {
+  background: #21262d;
+  color: #7d8590;
+}
+.badge-cask {
+  background: #1b2d47;
+  color: #58a6ff;
+}
+.badge-formula {
+  background: #2d1b47;
+  color: #a855f7;
+}
+.version {
+  font-family: 'SF Mono', Consolas, monospace;
+  font-size: 12px;
+  color: #e6edf3;
+}
+.version-stale {
+  color: #d29922;
+}
+a {
+  color: #58a6ff;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+.footer {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid #30363d;
+  font-size: 12px;
+  color: #7d8590;
+}
 </style>
 </head>
 <body>
