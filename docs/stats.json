@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-10T00:25:19.310543465Z",
+  "generated_at": "2026-04-11T00:24:18.466996953Z",
   "tap_name": "castrojo/tap",
   "tap_url": "https://github.com/castrojo/tap",
   "summary": {
@@ -11,7 +11,7 @@
     "unknown_count": 1
   },
   "traffic": {
-    "count": 272,
+    "count": 265,
     "uniques": 93,
     "window": "14 days"
   },
@@ -20,8 +20,8 @@
       "name": "ublue-os/homebrew-tap",
       "url": "https://github.com/ublue-os/homebrew-tap",
       "traffic": {
-        "count": 2412,
-        "uniques": 2028,
+        "count": 2506,
+        "uniques": 2109,
         "window": "14 days"
       }
     },
@@ -29,8 +29,8 @@
       "name": "ublue-os/homebrew-experimental-tap",
       "url": "https://github.com/ublue-os/homebrew-experimental-tap",
       "traffic": {
-        "count": 840,
-        "uniques": 422,
+        "count": 796,
+        "uniques": 413,
         "window": "14 days"
       }
     }
@@ -51,7 +51,7 @@
       "latest_version": "1.9.37",
       "is_stale": true,
       "freshness_known": true,
-      "last_updated": "2026-04-09"
+      "last_updated": "2026-04-10"
     },
     {
       "name": "quarto-linux",
@@ -68,7 +68,7 @@
       "latest_version": "1.9.37",
       "is_stale": true,
       "freshness_known": true,
-      "last_updated": "2026-04-09"
+      "last_updated": "2026-04-10"
     },
     {
       "name": "rancher-desktop-linux",
@@ -85,7 +85,7 @@
       "latest_version": "1.22.0",
       "is_stale": false,
       "freshness_known": true,
-      "last_updated": "2026-04-09"
+      "last_updated": "2026-04-10"
     },
     {
       "name": "sublime-text-linux",
@@ -99,239 +99,239 @@
       "file_path": "Casks/sublime-text-linux.rb",
       "is_stale": false,
       "freshness_known": false,
-      "last_updated": "2026-04-09"
+      "last_updated": "2026-04-10"
     }
   ],
   "os_stats": [
     {
       "window": "30d",
-      "start_date": "2026-03-10",
-      "end_date": "2026-04-09",
-      "total_count": 27577069,
+      "start_date": "2026-03-11",
+      "end_date": "2026-04-10",
+      "total_count": 27500974,
       "items": [
         {
           "rank": 1,
           "os_version": "macOS Tahoe (26)",
-          "count": "10,141,593",
-          "percent": "36.78",
+          "count": "10,151,116",
+          "percent": "36.91",
           "bar_width": 100
         },
         {
           "rank": 2,
           "os_version": "macOS Sequoia (15)",
-          "count": "6,349,286",
-          "percent": "23.02",
+          "count": "6,325,065",
+          "percent": "23",
           "bar_width": 62
         },
         {
           "rank": 3,
           "os_version": "Ubuntu 24.04 LTS",
-          "count": "4,196,681",
-          "percent": "15.22",
+          "count": "4,180,029",
+          "percent": "15.20",
           "bar_width": 41
         },
         {
           "rank": 4,
           "os_version": "macOS Sonoma (14)",
-          "count": "2,240,014",
-          "percent": "8.12",
-          "bar_width": 22
+          "count": "2,218,644",
+          "percent": "8.07",
+          "bar_width": 21
         },
         {
           "rank": 5,
           "os_version": "Ubuntu 22.04 LTS",
-          "count": "1,209,217",
-          "percent": "4.38",
+          "count": "1,196,071",
+          "percent": "4.35",
           "bar_width": 11
         },
         {
           "rank": 6,
           "os_version": "Debian GNU/Linux 13",
-          "count": "546,440",
-          "percent": "1.98",
+          "count": "542,751",
+          "percent": "1.97",
           "bar_width": 5
         },
         {
           "rank": 7,
           "os_version": "macOS Monterey (12)",
-          "count": "498,279",
-          "percent": "1.81",
+          "count": "495,453",
+          "percent": "1.80",
           "bar_width": 4
         },
         {
           "rank": 8,
           "os_version": "macOS Ventura (13)",
-          "count": "443,889",
-          "percent": "1.61",
+          "count": "441,029",
+          "percent": "1.60",
           "bar_width": 4
         },
         {
           "rank": 9,
           "os_version": "Bazzite",
-          "count": "358,398",
-          "percent": "1.30",
+          "count": "363,968",
+          "percent": "1.32",
           "bar_width": 3
         },
         {
           "rank": 10,
           "os_version": "Debian GNU/Linux 12",
-          "count": "238,250",
-          "percent": "0.86",
+          "count": "234,370",
+          "percent": "0.85",
           "bar_width": 2
         }
       ]
     },
     {
       "window": "90d",
-      "start_date": "2026-01-09",
-      "end_date": "2026-04-09",
-      "total_count": 79463498,
+      "start_date": "2026-01-10",
+      "end_date": "2026-04-10",
+      "total_count": 79782134,
       "items": [
         {
           "rank": 1,
           "os_version": "macOS Tahoe (26)",
-          "count": "27,515,777",
-          "percent": "34.63",
+          "count": "27,653,183",
+          "percent": "34.66",
           "bar_width": 100
         },
         {
           "rank": 2,
           "os_version": "macOS Sequoia (15)",
-          "count": "19,829,203",
-          "percent": "24.95",
-          "bar_width": 72
+          "count": "19,862,859",
+          "percent": "24.90",
+          "bar_width": 71
         },
         {
           "rank": 3,
           "os_version": "Ubuntu 24.04 LTS",
-          "count": "11,979,885",
-          "percent": "15.08",
+          "count": "12,066,779",
+          "percent": "15.12",
           "bar_width": 43
         },
         {
           "rank": 4,
           "os_version": "macOS Sonoma (14)",
-          "count": "6,607,061",
-          "percent": "8.31",
+          "count": "6,603,744",
+          "percent": "8.28",
           "bar_width": 23
         },
         {
           "rank": 5,
           "os_version": "Ubuntu 22.04 LTS",
-          "count": "3,495,376",
-          "percent": "4.40",
+          "count": "3,521,000",
+          "percent": "4.41",
           "bar_width": 12
         },
         {
           "rank": 6,
           "os_version": "Debian GNU/Linux 13",
-          "count": "1,530,814",
+          "count": "1,543,380",
           "percent": "1.93",
           "bar_width": 5
         },
         {
           "rank": 7,
           "os_version": "macOS Monterey (12)",
-          "count": "1,435,662",
-          "percent": "1.81",
+          "count": "1,438,265",
+          "percent": "1.80",
           "bar_width": 5
         },
         {
           "rank": 8,
           "os_version": "macOS Ventura (13)",
-          "count": "1,325,712",
-          "percent": "1.67",
+          "count": "1,328,192",
+          "percent": "1.66",
           "bar_width": 4
         },
         {
           "rank": 9,
           "os_version": "Bazzite",
-          "count": "976,132",
+          "count": "978,442",
           "percent": "1.23",
           "bar_width": 3
         },
         {
           "rank": 10,
           "os_version": "Debian GNU/Linux 12",
-          "count": "719,250",
-          "percent": "0.91",
+          "count": "721,335",
+          "percent": "0.90",
           "bar_width": 2
         }
       ]
     },
     {
       "window": "365d",
-      "start_date": "2025-04-09",
-      "end_date": "2026-04-09",
-      "total_count": 263785084,
+      "start_date": "2025-04-10",
+      "end_date": "2026-04-10",
+      "total_count": 263934122,
       "items": [
         {
           "rank": 1,
           "os_version": "macOS Sequoia (15)",
-          "count": "104,795,612",
-          "percent": "39.73",
+          "count": "104,634,501",
+          "percent": "39.64",
           "bar_width": 100
         },
         {
           "rank": 2,
           "os_version": "macOS Tahoe (26)",
-          "count": "47,958,163",
-          "percent": "18.18",
-          "bar_width": 45
+          "count": "48,308,913",
+          "percent": "18.30",
+          "bar_width": 46
         },
         {
           "rank": 3,
           "os_version": "macOS Sonoma (14)",
-          "count": "34,814,212",
-          "percent": "13.20",
+          "count": "34,693,578",
+          "percent": "13.14",
           "bar_width": 33
         },
         {
           "rank": 4,
           "os_version": "Ubuntu 24.04 LTS",
-          "count": "30,501,638",
-          "percent": "11.56",
+          "count": "30,582,860",
+          "percent": "11.59",
           "bar_width": 29
         },
         {
           "rank": 5,
           "os_version": "Ubuntu 22.04 LTS",
-          "count": "10,653,763",
+          "count": "10,667,967",
           "percent": "4.04",
           "bar_width": 10
         },
         {
           "rank": 6,
           "os_version": "macOS Ventura (13)",
-          "count": "9,976,740",
-          "percent": "3.78",
+          "count": "9,929,483",
+          "percent": "3.76",
           "bar_width": 9
         },
         {
           "rank": 7,
           "os_version": "macOS Monterey (12)",
-          "count": "5,582,852",
-          "percent": "2.12",
+          "count": "5,580,033",
+          "percent": "2.11",
           "bar_width": 5
         },
         {
           "rank": 8,
           "os_version": "Debian GNU/Linux 13",
-          "count": "2,014,711",
-          "percent": "0.76",
+          "count": "2,030,335",
+          "percent": "0.77",
           "bar_width": 1
         },
         {
           "rank": 9,
           "os_version": "Bazzite",
-          "count": "2,007,851",
-          "percent": "0.76",
+          "count": "2,023,454",
+          "percent": "0.77",
           "bar_width": 1
         },
         {
           "rank": 10,
           "os_version": "Debian GNU/Linux 12",
-          "count": "1,929,858",
+          "count": "1,930,592",
           "percent": "0.73",
           "bar_width": 1
         }
